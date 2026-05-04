@@ -4,13 +4,18 @@ All environment-specific settings live here to follow the Single
 Responsibility / Open-Closed principles.
 """
 import os
+from dotenv import load_dotenv
 
+# Load variables from .env file (if it exists)
+load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Base paths
+# Base paths & Database URL
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE_PATH = os.path.join(BASE_DIR, "database", "observatory.db")
+
+# If DATABASE_URL is set in .env (e.g. Postgres), use it. Otherwise, default to local SQLite
+DATABASE_PATH = os.getenv("DATABASE_URL", os.path.join(BASE_DIR, "database", "observatory.db"))
 SCHEMA_PATH   = os.path.join(BASE_DIR, "database", "schema.sql")
 SEED_PATH     = os.path.join(BASE_DIR, "database", "seed_data.sql")
 MODEL_DIR     = os.path.join(BASE_DIR, "models", "saved")
@@ -18,10 +23,10 @@ MODEL_DIR     = os.path.join(BASE_DIR, "models", "saved")
 # ---------------------------------------------------------------------------
 # Flask
 # ---------------------------------------------------------------------------
-FLASK_HOST  = "0.0.0.0"
-FLASK_PORT  = 5000
-FLASK_DEBUG = True
-SECRET_KEY  = "observatory-secret-key-change-in-prod"
+FLASK_HOST  = os.getenv("FLASK_HOST", "0.0.0.0")
+FLASK_PORT  = int(os.getenv("FLASK_PORT", 5000))
+FLASK_DEBUG = os.getenv("FLASK_DEBUG", "True").lower() == "true"
+SECRET_KEY  = os.getenv("SECRET_KEY", "observatory-secret-key-change-in-prod")
 
 # ---------------------------------------------------------------------------
 # AI / ML
