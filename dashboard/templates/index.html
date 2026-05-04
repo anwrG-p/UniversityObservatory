@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Intelligent University Observatory – Multi-Agent System for Internship, Project, Certification and Scholarship Management"/>
+  <title>University Observatory | MAS Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- ─── Header ─────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-logo">
+      <div class="logo-icon">🔭</div>
+      <h1>University Observatory</h1>
+    </div>
+    <div class="header-actions">
+      <span class="badge badge-green">● Live</span>
+      <button class="btn btn-primary" id="btn-run-pipeline">
+        ⚡ Run Pipeline
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── Main ────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- Pipeline status -->
+    <div id="pipeline-status"></div>
+
+    <!-- Stat cards -->
+    <p class="section-title">Overview</p>
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value" id="stat-opps">—</div><div class="stat-label">Opportunities</div></div>
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="stat-users">—</div><div class="stat-label">Users</div></div>
+      <div class="stat-card"><div class="stat-icon">🧩</div><div class="stat-value" id="stat-clusters">—</div><div class="stat-label">Clusters</div></div>
+      <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-value" id="stat-recs">—</div><div class="stat-label">Recommendations</div></div>
+      <div class="stat-card"><div class="stat-icon">🔔</div><div class="stat-value" id="stat-notifs">—</div><div class="stat-label">Unread Alerts</div></div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="two-col">
+
+      <!-- Distribution doughnut -->
+      <div class="card">
+        <div class="card-header"><h2>📊 Opportunity Distribution</h2></div>
+        <div class="card-body"><div class="chart-box"><canvas id="chart-distribution"></canvas></div></div>
+      </div>
+
+      <!-- Cluster bar -->
+      <div class="card">
+        <div class="card-header"><h2>🧩 Cluster Sizes</h2></div>
+        <div class="card-body"><div class="chart-box"><canvas id="chart-clusters"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Opportunities table -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-header">
+        <h2>📋 Opportunities</h2>
+        <span class="badge badge-blue" id="opp-count-badge">0</span>
+      </div>
+      <div class="filters-bar">
+        <span class="filter-label">Type</span>
+        <select id="filter-type">
+          <option value="">All</option>
+          <option value="internship">Internship</option>
+          <option value="scholarship">Scholarship</option>
+          <option value="fellowship">Fellowship</option>
+          <option value="course">Course</option>
+          <option value="research_project">Research Project</option>
+          <option value="postdoc">Postdoc</option>
+        </select>
+        <span class="filter-label">Location</span>
+        <input type="text" id="filter-location" placeholder="e.g. France"/>
+        <button class="btn btn-ghost btn-sm" id="btn-filter">Filter</button>
+        <button class="btn btn-ghost btn-sm" id="btn-reset-filter">Reset</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Title</th><th>Type</th>
+              <th>Location</th><th>Deadline</th><th>Cluster</th><th>Link</th>
+            </tr>
+          </thead>
+          <tbody id="opp-tbody">
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⏳</div>Loading…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="opp-showing">Showing 0 opportunities</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" id="btn-prev">← Prev</button>
+          <button class="btn btn-ghost btn-sm" id="btn-next">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations + Notifications -->
+    <div class="two-col">
+
+      <!-- Recommendations -->
+      <div class="card">
+        <div class="card-header"><h2>🎯 Recommendations</h2></div>
+        <div class="user-tabs" id="user-tabs">
+          <span class="filter-label" style="padding-top:4px">Select user:</span>
+        </div>
+        <div class="card-body">
+          <div class="rec-list" id="rec-list">
+            <div class="empty-state"><div class="empty-icon">👤</div>Select a user to view recommendations.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="card">
+        <div class="card-header">
+          <h2>🔔 Notifications</h2>
+          <select id="notif-user-select" style="min-width:120px;font-size:0.78rem">
+            <option value="">Select user</option>
+          </select>
+        </div>
+        <div class="card-body">
+          <div class="notif-list" id="notif-list">
+            <div class="empty-state"><div class="empty-icon">🔔</div>Select a user to view alerts.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clusters detail -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-header"><h2>🧩 Cluster Explorer</h2></div>
+      <div style="display:grid;grid-template-columns:280px 1fr;min-height:280px">
+        <div style="border-right:1px solid var(--border);padding:1rem">
+          <div class="cluster-list" id="cluster-list"></div>
+        </div>
+        <div style="padding:1.5rem">
+          <div id="cluster-detail">
+            <div class="empty-state"><div class="empty-icon">🧩</div>Select a cluster to view opportunities.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    University Observatory MAS — Multi-Agent System for Academic Opportunity Management
+    &nbsp;|&nbsp; Built with Flask + scikit-learn + Chart.js
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

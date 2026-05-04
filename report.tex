@@ -1,0 +1,84 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Intelligent University Observatory: A Multi-Agent System for Academic and Professional Opportunity Discovery}
+
+\author{\IEEEauthorblockN{Anonymous Author(s)}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{University / Institution Name}\\
+City, Country \\
+email@domain.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+The rapid proliferation of academic and professional opportunities—ranging from internships and research projects to scholarships and certifications—has made it increasingly difficult for students and researchers to navigate and identify relevant prospects. To address this information overload, we propose the Intelligent University Observatory, a production-ready Multi-Agent System (MAS). The system employs nine autonomous agents organized into four functional layers: observation, analysis, recommendation, and system orchestration. The observation layer utilizes both API integrations (e.g., arXiv, Remotive) and web scraping via a self-hosted Firecrawl instance to aggregate unstructured data. The analysis layer structures this data using TF-IDF coupled with Logistic Regression for multi-class categorization and K-Means clustering for thematic grouping. A dual-agent recommendation engine then utilizes cosine similarity and a multi-factor ranking algorithm to provide personalized opportunity feeds to end users. The entire pipeline is orchestrated by a central Coordinator Agent and visualized through a modern, responsive web dashboard. Empirical testing demonstrates the system's efficacy in autonomously aggregating, structuring, and matching opportunities with minimal human intervention.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Multi-Agent Systems, Information Extraction, Recommender Systems, Machine Learning, Web Scraping
+\end{IEEEkeywords}
+
+\section{Introduction}
+Navigating the modern academic and professional landscape is a complex task for university students. Opportunities such as scholarships, internships, postdoctoral positions, and certifications are scattered across heterogeneous platforms. Traditional aggregators rely heavily on manual curation or simplistic keyword matching, which fails to scale and often results in poor relevance for the user. 
+
+To overcome these challenges, we introduce the \textbf{Intelligent University Observatory}, an automated Multi-Agent System (MAS). By delegating specialized tasks to autonomous agents, the system achieves a high degree of modularity and resilience. The observatory automatically collects real-world data from varied sources, processes the textual descriptions using Natural Language Processing (NLP) techniques, groups them into coherent clusters, and matches them against user profiles. 
+
+\section{System Architecture}
+The MAS is designed following SOLID object-oriented principles and comprises nine specialized agents divided into four primary layers (Fig. 1). 
+
+\subsection{Observer Layer (Data Ingestion)}
+The observer layer is responsible for gathering data from the web. It operates in two modes: a mock-data mode for robust pipeline testing and a real-data mode for production environments. 
+\begin{itemize}
+    \item \textbf{API Agents}: Utilize public endpoints without the need for complex rendering. The \textit{ArXivAPIAgent} fetches recent preprints in Artificial Intelligence and Machine Learning, translating them into research project opportunities. The \textit{RemotiveAPIAgent} aggregates remote tech and data science jobs.
+    \item \textbf{Firecrawl Agents}: For complex, dynamically rendered websites (e.g., scholarship boards), we employ a self-hosted Firecrawl instance. The \textit{InternshipFirecrawlAgent} and \textit{ScholarshipFirecrawlAgent} extract raw markdown from target URLs, which is then parsed heuristically into structured JSON.
+\end{itemize}
+
+\subsection{Analysis Layer (AI Pipeline)}
+Once raw data is ingested and deduplicated in the SQLite database, it is processed by the analysis layer.
+\begin{itemize}
+    \item \textbf{ClassificationAgent}: Utilizes a supervised machine learning pipeline. Textual descriptions are vectorized using TF-IDF (Term Frequency-Inverse Document Frequency) and classified into predefined categories (e.g., internship, fellowship, research\_project) using a Logistic Regression model trained via the One-vs-Rest strategy.
+    \item \textbf{ClusteringAgent}: Operates without supervision to discover emerging themes. It applies K-Means clustering (defaulting to 5 clusters) on the TF-IDF matrix. The top terms per cluster are extracted to dynamically generate human-readable keywords for the dashboard.
+\end{itemize}
+
+\subsection{Recommendation Layer}
+The system provides personalized feeds tailored to user profiles, which contain academic levels, fields of interest, and skills.
+\begin{itemize}
+    \item \textbf{RelevanceMatcherAgent}: Computes the cosine similarity between the TF-IDF vector of a user's profile and the vectors of active opportunities.
+    \item \textbf{AdvisorAgent}: Takes the raw similarity scores and applies a multi-factor ranking algorithm. It adjusts scores based on deadline proximity (penalizing expired or imminent deadlines) and academic level alignment, ultimately storing the top-K recommendations per user.
+\end{itemize}
+
+\subsection{System Layer}
+The \textbf{CoordinatorAgent} acts as the orchestrator. It manages the execution sequence: Scrape $\rightarrow$ Classify $\rightarrow$ Cluster $\rightarrow$ Match $\rightarrow$ Advise $\rightarrow$ Notify, ensuring data consistency across the pipeline. The \textbf{NotificationAgent} generates alerts for users when highly relevant opportunities are discovered.
+
+\section{Implementation Details}
+The backend is implemented in Python, leveraging Flask for the RESTful API and Scikit-Learn for the AI models. Data persistence is managed via a thread-safe SQLite repository pattern, which is easily migratable to PostgreSQL for larger-scale deployments. The frontend is a responsive, dark-themed dashboard built with HTML5, Vanilla CSS (employing glassmorphism aesthetics), and JavaScript, utilizing Chart.js for real-time statistical visualization. 
+
+\section{Results and Discussion}
+End-to-end testing confirms that the MAS successfully abstracts the complexity of data collection. The integration of Firecrawl allowed the system to bypass traditional Selenium-based scraping overhead, directly yielding parseable markdown. The Logistic Regression classifier proved highly efficient for the text categorization task, while the Cosine Similarity-based recommender effectively surfaced relevant niches, such as matching a user interested in "Reinforcement Learning" specifically with DeepMind internships and related arXiv preprints.
+
+\section{Conclusion and Future Work}
+The Intelligent University Observatory presents a robust, scalable MAS for academic opportunity management. Future iterations will focus on replacing the heuristic markdown parser with a lightweight Large Language Model (LLM) for more accurate entity extraction and integrating active learning to continuously improve the classification agent based on user interaction (clicks and saves).
+
+\begin{thebibliography}{00}
+\bibitem{mas1} Wooldridge, M. (2009). \textit{An Introduction to MultiAgent Systems}. John Wiley \& Sons.
+\bibitem{sklearn} Pedregosa, F., et al. (2011). ``Scikit-learn: Machine Learning in Python.'' \textit{Journal of Machine Learning Research}, 12, 2825-2830.
+\bibitem{firecrawl} MendableAI. (2024). \textit{Firecrawl: Turn entire websites into LLM-ready markdown}. GitHub Repository. \url{https://github.com/mendableai/firecrawl}.
+\end{thebibliography}
+
+\end{document}
