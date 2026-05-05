@@ -217,6 +217,14 @@ class MarkdownParser:
     _MIN_DESC_LEN = 60   # discard blocks shorter than this
 
     @classmethod
+    def _is_valid_block(cls, block: str) -> bool:
+        """Heuristic: must have a header-like line OR contains keywords + minimum length"""
+        lines = block.split("\n")
+        has_header = any(line.strip().startswith(("#", "**", "__")) for line in lines[:2])
+        has_keywords = any(k in block.lower() for k in ["internship", "scholarship", "fellowship", "award", "program"])
+        return (has_header or has_keywords) and len(block) > cls._MIN_DESC_LEN
+
+    @classmethod
     def parse(cls, markdown: str, source_url: str, default_type: str) -> List[Dict]:
         """
         Parse markdown into a list of opportunity dicts.
@@ -235,8 +243,8 @@ class MarkdownParser:
         seen_titles: set = set()
 
         for title, body in blocks:
-            if len(body) < cls._MIN_DESC_LEN:
-                logger.debug("  Skipping block '%s' (too short: %d chars)", title[:30], len(body))
+            if not cls._is_valid_block(body):
+                logger.debug("  Skipping block '%s' (too short or irrelevant)", title[:30])
                 continue
             norm_title = title.strip().lower()
             if not norm_title or norm_title in seen_titles:
