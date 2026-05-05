@@ -161,7 +161,7 @@ class OpportunityClusterer:
             coords2d = self._pca.fit_transform(X_dense)
             self.pca_coords = [
                 {"x": float(coords2d[i, 0]), "y": float(coords2d[i, 1]),
-                 "cluster": int(labels[i])}
+                 "cluster": int(labels[i]) + 1}
                 for i in range(len(labels))
             ]
         except Exception as exc:

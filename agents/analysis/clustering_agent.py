@@ -42,7 +42,7 @@ class ClusteringAgent(BaseAgent):
 
         # Persist cluster metadata
         for cid, meta in cluster_meta.items():
-            self.db.upsert_cluster(cid, meta["name"], meta["keywords"])
+            self.db.upsert_cluster(cid + 1, meta["name"], meta["keywords"])
 
         # Assign cluster ids to opportunities
         for opp_id, label in zip(ids, labels):
@@ -58,6 +58,6 @@ class ClusteringAgent(BaseAgent):
             "total":         len(opportunities),
             "clusters_found": len(cluster_meta),
             "cluster_sizes": {
-                str(k): int((labels == k).sum()) for k in set(labels)
+                str(int(k) + 1): int((labels == k).sum()) for k in set(labels)
             },
         }
