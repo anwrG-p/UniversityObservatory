@@ -80,6 +80,8 @@ class FirecrawlClient:
 
     def is_available(self) -> bool:
         """Return True if the Firecrawl instance is reachable."""
+        if "api.firecrawl.dev" in self.base_url:
+            return True
         try:
             r = self._session.get(f"{self.base_url}/health", timeout=5)
             return r.status_code == 200
