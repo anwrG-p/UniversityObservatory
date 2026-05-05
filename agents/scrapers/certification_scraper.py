@@ -198,8 +198,7 @@ class CertificationScraperAgent(BaseAgent):
         total      = api_result.get("result", {}).get("inserted", 0)
 
         if total == 0:
-            self.logger.warning("Real sources returned 0 → falling back to mock.")
-            return self._run_mock()
+            self.logger.info("Real sources returned 0 new records (all were duplicates).")
 
         return {"status": "ok", "agent": self.name, "inserted": total, "source": "real"}
 
