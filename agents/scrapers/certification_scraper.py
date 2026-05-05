@@ -200,7 +200,14 @@ class CertificationScraperAgent(BaseAgent):
         if total == 0:
             self.logger.info("Real sources returned 0 new records (all were duplicates).")
 
-        return {"status": "ok", "agent": self.name, "inserted": total, "source": "real"}
+        fetched = api_result.get("result", {}).get("fetched", 0)
+        return {
+            "status": "ok", 
+            "agent": self.name, 
+            "inserted": total, 
+            "fetched": fetched,
+            "source": "real"
+        }
 
     # ------------------------------------------------------------------
     # Mock-data path (default)

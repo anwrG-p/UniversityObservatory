@@ -198,7 +198,14 @@ class InternshipScraperAgent(BaseAgent):
         if total == 0:
             self.logger.info("Real sources returned 0 new records (all were duplicates).")
 
-        return {"status": "ok", "agent": self.name, "inserted": total, "source": "real"}
+        fetched = fc_result.get("result", {}).get("candidates", 0) + api_result.get("result", {}).get("fetched", 0)
+        return {
+            "status": "ok", 
+            "agent": self.name, 
+            "inserted": total, 
+            "fetched": fetched,
+            "source": "real"
+        }
 
     # ------------------------------------------------------------------
     # Mock-data path (default)
