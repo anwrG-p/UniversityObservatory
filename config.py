@@ -84,21 +84,26 @@ INTERNSHIP_SCRAPE_URLS = [
     "https://ai-jobs.net/",
     "https://www.euraxess.eu/jobs/search?freeTextKeyword=machine+learning",
     "https://jobs.lever.co/",
+    "https://boards.greenhouse.io/",
+    "https://internshala.com/internships/machine-learning-internship/",
+    "https://wellfound.com/jobs",
 ]
 SCHOLARSHIP_SCRAPE_URLS = [
     "https://www.scholars4dev.com/category/scholarships-by-subject/science-technology/",
     "https://www.daad.de/en/studying-in-germany/scholarships/daad-scholarships/",
-    
+    "https://www.scholarshipportal.com/",
+    "https://opportunitiescorners.com/category/scholarships/",
 ]
 COURSE_SCRAPE_URLS = [
     "https://www.coursera.org/courses?query=machine%20learning",
     "https://www.edx.org/learn/machine-learning",
+    "https://www.udemy.com/topic/machine-learning/",
 ]
 
 # ---------------------------------------------------------------------------
 # API data sources (no scraping needed)
 # ---------------------------------------------------------------------------
 REMOTIVE_API_URL = "https://remotive.com/api/remote-jobs"
-ARXIV_API_URL    = "http://export.arxiv.org/api/query"
+ARXIV_API_URL    = "https://export.arxiv.org/api/query"
 ARXIV_SEARCH_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:stat.ML"
-ARXIV_MAX_RESULTS   = 15
+ARXIV_MAX_RESULTS   = 50
