@@ -195,12 +195,12 @@ class CertificationScraperAgent(BaseAgent):
         from data_collection.api_agent import ArXivAPIAgent
 
         api_result = ArXivAPIAgent(self.db).execute()
-        total      = api_result.get("result", {}).get("inserted", 0)
+        total      = api_result.get("inserted", 0)
 
         if total == 0:
             self.logger.info("Real sources returned 0 new records (all were duplicates).")
 
-        fetched = api_result.get("result", {}).get("fetched", 0)
+        fetched = api_result.get("fetched", 0)
         return {
             "status": "ok", 
             "agent": self.name, 

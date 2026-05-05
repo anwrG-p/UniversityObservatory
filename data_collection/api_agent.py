@@ -233,6 +233,10 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
         try:
             resp = requests.get(config.ARXIV_API_URL, params=params, timeout=20)
             resp.raise_for_status()
+            
+            # Raw debug log for Render
+            self.logger.info("ArXiv Raw Response (first 150 chars): %s", resp.text[:150].replace("\n", " "))
+            
             return self._parse_atom(resp.text)
         except requests.exceptions.RequestException as exc:
             self.logger.warning("ArXiv API error: %s", exc)

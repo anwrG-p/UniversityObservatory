@@ -81,6 +81,18 @@ class CoordinatorAgent(BaseAgent):
         """
         report: Dict[str, Any] = {"status": "ok", "agent": self.name, "steps": {}}
 
+        # ── Heartbeat Check ──────────────────────────────────────────
+        import requests
+        print("\n" + "-"*40)
+        print("NETWORK HEARTBEAT")
+        try:
+            r = requests.get("https://export.arxiv.org/api/query?max_results=1", timeout=5)
+            print(f"  ArXiv API Connection: SUCCESS (Status {r.status_code})")
+            print(f"  ArXiv Content Sample: {r.text[:50].strip()}...")
+        except Exception as e:
+            print(f"  ArXiv API Connection: FAILED -> {e}")
+        print("-"*40 + "\n")
+
         # ── Step 1-3 : Scraping ──────────────────────────────────────
         if not skip_scraping:
             logger.info("=== STEP 1-3: Scraping ===")

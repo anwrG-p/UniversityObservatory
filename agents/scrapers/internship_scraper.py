@@ -190,15 +190,15 @@ class InternshipScraperAgent(BaseAgent):
         total = 0
 
         fc_result  = InternshipFirecrawlAgent(self.db).execute()
-        total     += fc_result.get("result", {}).get("inserted", 0)
+        total     += fc_result.get("inserted", 0)
 
         api_result = RemotiveAPIAgent(self.db).execute()
-        total     += api_result.get("result", {}).get("inserted", 0)
+        total     += api_result.get("inserted", 0)
 
         if total == 0:
             self.logger.info("Real sources returned 0 new records (all were duplicates).")
 
-        fetched = fc_result.get("result", {}).get("candidates", 0) + api_result.get("result", {}).get("fetched", 0)
+        fetched = fc_result.get("candidates", 0) + api_result.get("fetched", 0)
         return {
             "status": "ok", 
             "agent": self.name, 
