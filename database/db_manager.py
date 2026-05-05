@@ -147,6 +147,17 @@ class DatabaseManager:
             self.execute_script(f.read())
         logger.info("Seeded database from %s", path)
 
+    def clear_all_data(self) -> None:
+        """Wipes all data from the database while keeping the schema intact."""
+        logger.info("Wiping all data from database...")
+        if self.is_postgres:
+            # Postgres TRUNCATE is fast and handles foreign keys with CASCADE
+            self.execute("TRUNCATE TABLE notifications, recommendations, clusters, opportunities, users RESTART IDENTITY CASCADE")
+        else:
+            tables = ["notifications", "recommendations", "clusters", "opportunities", "users"]
+            for t in tables:
+                self.execute(f"DELETE FROM {t}")
+
     # ------------------------------------------------------------------
     # Opportunities CRUD
     # ------------------------------------------------------------------

@@ -88,12 +88,13 @@ def main():
     parser.add_argument("--init",      action="store_true", help="Seed database with sample data")
     parser.add_argument("--pipeline",  action="store_true", help="Run the full MAS pipeline")
     parser.add_argument("--no-scrape", action="store_true", help="Skip scraping in pipeline")
+    parser.add_argument("--reset",     action="store_true", help="Wipe all data from the database")
     parser.add_argument("--serve",     action="store_true", help="Start the Flask web server")
     parser.add_argument("--real-data", action="store_true", help="Use real scraping/APIs instead of mock data")
     args = parser.parse_args()
 
     # Default: if no flag given, do everything
-    if not any([args.init, args.pipeline, args.serve]):
+    if not any([args.init, args.pipeline, args.serve, args.reset]):
         args.init     = True
         args.pipeline = True
         args.serve    = True
@@ -105,6 +106,9 @@ def main():
 
     from database.db_manager import DatabaseManager
     db = DatabaseManager(config.DATABASE_PATH)
+
+    if args.reset:
+        db.clear_all_data()
 
     if args.init:
         initialize(db)
