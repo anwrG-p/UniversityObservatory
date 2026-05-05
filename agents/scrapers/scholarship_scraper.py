@@ -179,20 +179,34 @@ class ScholarshipScraperAgent(BaseAgent):
 
     def _run_real(self, force_insert: bool = False) -> Dict[str, Any]:
         from data_collection.firecrawl_agent import ScholarshipFirecrawlAgent
+        from data_collection.api_agent import ScholarshipRSSAgent
 
+        total   = 0
+        fetched = 0
+
+        # Try Firecrawl first (requires self-hosted instance)
         fc_result = ScholarshipFirecrawlAgent(self.db).execute(force_insert=force_insert)
-        total     = fc_result.get("inserted", 0)
+        fc_inserted = fc_result.get("inserted", 0)
+        fc_candidates = fc_result.get("candidates", 0)
+        total   += fc_inserted
+        fetched += fc_candidates
+        if fc_result.get("status") == "firecrawl_unavailable":
+            self.logger.info("Firecrawl unavailable — using RSS fallback for scholarships.")
+
+        # Always also run RSS (works on Render without Firecrawl)
+        rss_result = ScholarshipRSSAgent(self.db).execute(force_insert=force_insert)
+        total   += rss_result.get("inserted", 0)
+        fetched += rss_result.get("fetched", 0)
 
         if total == 0:
             self.logger.info("Real sources returned 0 new records (all were duplicates).")
 
-        fetched = fc_result.get("candidates", 0)
         return {
-            "status": "ok", 
-            "agent": self.name, 
-            "inserted": total, 
-            "fetched": fetched,
-            "source": "real"
+            "status":   "ok",
+            "agent":    self.name,
+            "inserted": total,
+            "fetched":  fetched,
+            "source":   "real",
         }
 
     # ------------------------------------------------------------------

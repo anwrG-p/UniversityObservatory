@@ -83,7 +83,7 @@ USE_REAL_DATA = os.getenv("USE_REAL_DATA", "false").lower() == "true"
 INTERNSHIP_SCRAPE_URLS = [
     "https://ai-jobs.net/", 
     "https://www.euraxess.eu/jobs/search?freeTextKeyword=machine+learning",
-    "https://jobs.lever.co/"
+    
 ]
 SCHOLARSHIP_SCRAPE_URLS = [
     "https://www.scholars4dev.com/category/scholarships-by-subject/science-technology/",

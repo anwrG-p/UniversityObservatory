@@ -86,10 +86,9 @@ class CoordinatorAgent(BaseAgent):
         print("\n" + "-"*40)
         print("NETWORK HEARTBEAT")
         try:
-            r = requests.get("https://export.arxiv.org/api/query?max_results=1", timeout=5)
-            print(f"  ArXiv API Connection: {'SUCCESS' if r.status_code == 200 else 'RATE_LIMITED'} (Status {r.status_code})")
-            if r.status_code == 429:
-                print("  ! Warning: ArXiv is rate-limiting this IP. Adding extra delay.")
+            r = requests.get("https://export.arxiv.org/api/query?search_query=cat:cs.AI&max_results=1", timeout=5)
+            status_label = {200: "SUCCESS", 429: "RATE_LIMITED (wait ~10min)", 400: "BAD_REQUEST (query format error)"}.get(r.status_code, f"ERROR_{r.status_code}")
+            print(f"  ArXiv API Connection: {status_label} (Status {r.status_code})")
         except Exception as e:
             print(f"  ArXiv API Connection: FAILED -> {e}")
         print("-"*40 + "\n")

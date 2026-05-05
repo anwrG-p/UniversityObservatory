@@ -325,3 +325,123 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
             return ""
         cleaned = re.sub(r'\s+', ' ', text).strip()
         return cleaned[:1200] if len(cleaned) > 1200 else cleaned
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Scholarship RSS agent  –  no Firecrawl needed, works on any host
+# ═══════════════════════════════════════════════════════════════════════════
+
+class ScholarshipRSSAgent(_DeduplicateMixin, BaseAgent):
+    """
+    Fetches scholarship/fellowship opportunities from public RSS feeds.
+    Requires only the `requests` library — no Firecrawl or API key needed.
+    Works perfectly on Render and any other cloud host.
+
+    Feeds used
+    ----------
+    - scholars4dev.com  : scholarship aggregator RSS
+    - opportunitiescorners.com : opportunities RSS
+    - jobs.ac.uk        : academic jobs & fellowships RSS
+    """
+
+    _RSS_FEEDS = [
+        {
+            "url":  "https://www.scholars4dev.com/feed/",
+            "type": "scholarship",
+        },
+        {
+            "url":  "https://opportunitiescorners.com/feed/",
+            "type": "scholarship",
+        },
+        {
+            "url":  "https://www.jobs.ac.uk/api/jobs.rss?keywords=fellowship+scholarship&type=fellowship",
+            "type": "fellowship",
+        },
+    ]
+
+    def __init__(self, db: DatabaseManager):
+        super().__init__("ScholarshipRSSAgent", db)
+
+    def run(self, force_insert: bool = False, **kwargs) -> Dict[str, Any]:
+        all_records: List[Dict] = []
+
+        for feed in self._RSS_FEEDS:
+            items = self._fetch_rss(feed["url"], feed["type"])
+            self.logger.info("RSS[%s] → %d items", feed["url"].split("/")[2], len(items))
+            all_records.extend(items)
+
+        if not all_records:
+            return {
+                "status":   "api_unavailable",
+                "agent":    self.name,
+                "inserted": 0,
+                "fetched":  0,
+            }
+
+        inserted = self._insert_deduped(all_records, force_insert=force_insert)
+        self.logger.info("ScholarshipRSS: fetched %d, inserted %d new.", len(all_records), inserted)
+        return {
+            "status":   "ok",
+            "agent":    self.name,
+            "fetched":  len(all_records),
+            "inserted": inserted,
+            "source":   "rss_feeds",
+        }
+
+    def _fetch_rss(self, feed_url: str, opp_type: str) -> List[Dict]:
+        """Fetch and parse one RSS feed into opportunity dicts."""
+        try:
+            resp = requests.get(feed_url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+            resp.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            self.logger.warning("RSS fetch failed (%s): %s", feed_url, exc)
+            return []
+
+        try:
+            root = ET.fromstring(resp.content)
+        except ET.ParseError as exc:
+            self.logger.warning("RSS parse error (%s): %s", feed_url, exc)
+            return []
+
+        # Handle both RSS 2.0 (<channel><item>) and Atom (<entry>)
+        items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
+        records = []
+        for item in items:
+            def _text(tag: str) -> str:
+                el = item.find(tag)
+                if el is None:
+                    # Try Atom namespace
+                    el = item.find(f"{{http://www.w3.org/2005/Atom}}{tag}")
+                return (el.text or "").strip() if el is not None else ""
+
+            title = re.sub(r'<[^>]+>', '', _text("title"))
+            link  = _text("link") or _text("guid")
+            desc  = re.sub(r'<[^>]+>', ' ', _text("description") or _text("summary"))
+            desc  = re.sub(r'\s{2,}', ' ', desc).strip()[:1200]
+            pub   = _text("pubDate") or _text("published")
+
+            if not title or not link:
+                continue
+
+            # Parse published date
+            deadline = (datetime.utcnow() + timedelta(days=90)).strftime("%Y-%m-%d")
+            for fmt in ("%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S GMT", "%Y-%m-%dT%H:%M:%S%z"):
+                try:
+                    deadline = datetime.strptime(pub[:len(fmt)], fmt).strftime("%Y-%m-%d")
+                    break
+                except (ValueError, TypeError):
+                    pass
+
+            records.append({
+                "title":       title,
+                "description": desc or f"Scholarship opportunity. Visit the link for full details.",
+                "type":        opp_type,
+                "category":    opp_type,
+                "source":      feed_url.split("/")[2],
+                "location":    "Global / International",
+                "eligibility": "",
+                "deadline":    deadline,
+                "url":         link,
+            })
+
+        return records
