@@ -1,7 +1,7 @@
 """
 api/routes/recommendations.py
 ==============================
-GET /api/recommendations/<user_id>  – ranked recommendations for a user
+GET /api/recommendations/<user_id>  - ranked recommendations for a user
 """
 
 from flask import Blueprint, jsonify, current_app

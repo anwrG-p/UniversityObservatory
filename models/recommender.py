@@ -7,8 +7,8 @@ Content-based filtering via TF-IDF + cosine similarity.
 
 Workflow
 --------
-1. ``fit(corpus)``        – Vectorise all opportunity texts.
-2. ``match(query, corpus)`` – Score query (user profile) against corpus.
+1. ``fit(corpus)``        - Vectorise all opportunity texts.
+2. ``match(query, corpus)`` - Score query (user profile) against corpus.
 3. Returns ranked (index, score) pairs above the similarity threshold.
 """
 
@@ -75,12 +75,12 @@ class ContentBasedRecommender:
 
         Parameters
         ----------
-        query  : str   – user profile text (interests + skills)
-        corpus : list  – same list used in ``fit`` (for consistency)
+        query  : str   - user profile text (interests + skills)
+        corpus : list  - same list used in ``fit`` (for consistency)
 
         Returns
         -------
-        List of (index, score) tuples, sorted descending, length ≤ top_k.
+        List of (index, score) tuples, sorted descending, length â¤ top_k.
         """
         if self._corpus_matrix is None:
             logger.error("Recommender not fitted. Call fit() first.")

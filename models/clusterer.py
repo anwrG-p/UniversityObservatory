@@ -91,7 +91,7 @@ class OpportunityClusterer:
         self._store_pca(X, labels)
 
         logger.info(
-            "K-Means: %d docs → %d clusters", len(texts), self._model.n_clusters
+            "K-Means: %d docs -> %d clusters", len(texts), self._model.n_clusters
         )
         return labels, cluster_meta
 

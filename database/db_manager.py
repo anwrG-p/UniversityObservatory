@@ -24,8 +24,10 @@ class DatabaseManager:
         self.is_postgres = self.db_path.startswith(("postgres", "http"))
         
         if not self.is_postgres:
-            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
-            
+            db_dir = os.path.dirname(self.db_path)
+            if db_dir:
+                os.makedirs(db_dir, exist_ok=True)
+
         self._ensure_schema()
 
     # ------------------------------------------------------------------
@@ -48,25 +50,17 @@ class DatabaseManager:
         """Convert SQLite syntax to PostgreSQL syntax if needed."""
         if not self.is_postgres:
             return sql
-            
-        # Replace ? with %s
+        # Replace ? placeholders with %s
         sql = sql.replace("?", "%s")
-        # Replace INSERT OR IGNORE with ON CONFLICT DO NOTHING
-        if "INSERT OR IGNORE INTO opportunities" in sql:
-            sql = sql.replace("INSERT OR IGNORE INTO", "INSERT INTO")
-            sql += " ON CONFLICT (id) DO NOTHING" # This requires id constraint, but url or title is better.
-            # Actually, standardizing:
-            sql = sql.replace("ON CONFLICT (id) DO NOTHING", "ON CONFLICT DO NOTHING")
-            # If no unique constraint exists, PG doesn't support DO NOTHING without target.
-            # Let's just remove OR IGNORE if postgres.
-            sql = sql.replace("INSERT OR IGNORE INTO", "INSERT INTO")
-            
+        # SQLite's INSERT OR IGNORE has no direct PG equivalent without a unique constraint.
+        # We strip it -- the deduplication logic in agents prevents duplicates before insert.
+        sql = sql.replace("INSERT OR IGNORE INTO", "INSERT INTO")
         return sql
 
     def _ensure_schema(self):
         """Create tables from schema.sql if they don't exist."""
         if not os.path.exists(config.SCHEMA_PATH):
-            logger.warning("schema.sql not found – skipping schema init")
+            logger.warning("schema.sql not found - skipping schema init")
             return
         with open(config.SCHEMA_PATH, "r", encoding="utf-8") as f:
             ddl = f.read()

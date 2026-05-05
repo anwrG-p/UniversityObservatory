@@ -1,5 +1,5 @@
 """
-main.py – University Observatory MAS Entry Point
+main.py - University Observatory MAS Entry Point
 =================================================
 Usage
 -----
@@ -21,12 +21,12 @@ import logging
 import os
 import sys
 
-# ── Add project root to path ──────────────────────────────
+# ââ Add project root to path ââââââââââââââââââââââââââââââ
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import config
 
-# ── Logging setup ─────────────────────────────────────────
+# ââ Logging setup âââââââââââââââââââââââââââââââââââââââââ
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
     format=config.LOG_FORMAT,
@@ -43,7 +43,7 @@ def setup_dirs():
 
 def initialize(db):
     """Seed database with schema and sample data."""
-    logger.info("Seeding database…")
+    logger.info("Seeding databaseâ¦")
     db.seed_from_file(config.SEED_PATH)
     logger.info("Database ready.")
 
@@ -54,16 +54,16 @@ def run_pipeline(db, skip_scraping: bool = False):
     coordinator = CoordinatorAgent(db)
     report = coordinator.execute(skip_scraping=skip_scraping)
     steps  = report.get("steps", {})
-    logger.info("─" * 60)
+    logger.info("â" * 60)
     logger.info("PIPELINE REPORT")
-    logger.info("─" * 60)
+    logger.info("â" * 60)
     for agent, result in steps.items():
         if isinstance(result, dict):
             status = result.get("status", "?")
             logger.info("  %-35s  [%s]", agent, status.upper())
         else:
             logger.info("  %-35s  [%s]", agent, str(result))
-    logger.info("─" * 60)
+    logger.info("â" * 60)
     return report
 
 
@@ -71,7 +71,7 @@ def serve(db):
     """Start the Flask web server."""
     from api.app import create_app
     app = create_app(db)
-    logger.info("Dashboard available at → http://127.0.0.1:%d", config.FLASK_PORT)
+    logger.info("Dashboard available at -> http://127.0.0.1:%d", config.FLASK_PORT)
     app.run(
         host=config.FLASK_HOST,
         port=config.FLASK_PORT,

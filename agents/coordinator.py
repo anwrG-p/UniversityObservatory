@@ -1,24 +1,26 @@
 """
 agents/coordinator.py
 ======================
-CoordinatorAgent – the orchestrator of the entire MAS.
+CoordinatorAgent - the orchestrator of the entire MAS.
 
 Responsibilities
 ----------------
 1. Instantiate all sub-agents.
 2. Execute them in the correct dependency order.
-3. Pass outputs between dependent agents (e.g. matcher → advisor).
+3. Pass outputs between dependent agents (e.g. matcher -> advisor).
 4. Support optional APScheduler-based periodic execution.
 5. Return a full pipeline report.
 
 Pipeline order
 --------------
-[Scrapers] → [ClassificationAgent] → [ClusteringAgent]
-          → [RelevanceMatcherAgent] → [AdvisorAgent]
-          → [NotificationAgent]
+[Scrapers] -> [ClassificationAgent] -> [ClusteringAgent]
+          -> [RelevanceMatcherAgent] -> [AdvisorAgent]
+          -> [NotificationAgent]
 """
 
 import logging
+import time
+import requests
 from typing import Any, Dict, Optional
 
 from agents.base_agent import BaseAgent
@@ -81,8 +83,6 @@ class CoordinatorAgent(BaseAgent):
         """
         report: Dict[str, Any] = {"status": "ok", "agent": self.name, "steps": {}}
 
-        import requests
-        import time
         print("\n" + "-"*40)
         print("NETWORK HEARTBEAT")
         try:
@@ -98,7 +98,7 @@ class CoordinatorAgent(BaseAgent):
             logger.info("!!! FORCE_INSERT ENABLED: Skipping deduplication check !!!")
 
 
-        # ── Step 1-3 : Scraping ──────────────────────────────────────
+        # ââ Step 1-3 : Scraping ââââââââââââââââââââââââââââââââââââââ
         if not skip_scraping:
             logger.info("=== STEP 1-3: Scraping ===")
             for agent in (
@@ -113,25 +113,25 @@ class CoordinatorAgent(BaseAgent):
             logger.info("Skipping scraping (skip_scraping=True)")
             report["steps"]["scraping"] = "skipped"
 
-        # ── Step 4 : Classification ──────────────────────────────────
+        # ââ Step 4 : Classification ââââââââââââââââââââââââââââââââââ
         logger.info("=== STEP 4: Classification ===")
         report["steps"]["ClassificationAgent"] = self.classification_agent.execute()
 
-        # ── Step 5 : Clustering ──────────────────────────────────────
+        # ââ Step 5 : Clustering ââââââââââââââââââââââââââââââââââââââ
         logger.info("=== STEP 5: Clustering ===")
         report["steps"]["ClusteringAgent"] = self.clustering_agent.execute()
 
-        # ── Step 6 : Relevance matching ──────────────────────────────
+        # ââ Step 6 : Relevance matching ââââââââââââââââââââââââââââââ
         logger.info("=== STEP 6: Relevance Matching ===")
         match_result = self.relevance_matcher.execute()
         report["steps"]["RelevanceMatcherAgent"] = match_result
 
-        # ── Step 7 : Advisor ranks & persists ────────────────────────
+        # ââ Step 7 : Advisor ranks & persists ââââââââââââââââââââââââ
         logger.info("=== STEP 7: Advisor ===")
         matches = match_result.get("data", [])
         report["steps"]["AdvisorAgent"] = self.advisor_agent.execute(matches=matches)
 
-        # ── Step 8 : Notifications ───────────────────────────────────
+        # ââ Step 8 : Notifications âââââââââââââââââââââââââââââââââââ
         logger.info("=== STEP 8: Notifications ===")
         report["steps"]["NotificationAgent"] = self.notification_agent.execute()
 
@@ -157,7 +157,7 @@ class CoordinatorAgent(BaseAgent):
             )
             scheduler.start()
             logger.info(
-                "Scheduler started – pipeline runs every %d minutes.", interval_minutes
+                "Scheduler started - pipeline runs every %d minutes.", interval_minutes
             )
         except ImportError:
             logger.error("APScheduler not installed. Run: pip install apscheduler")

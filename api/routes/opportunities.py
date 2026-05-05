@@ -3,10 +3,10 @@ api/routes/opportunities.py
 ============================
 REST endpoints for Opportunities resource.
 
-GET  /api/opportunities          – list (with optional filters)
-GET  /api/opportunities/<id>     – single opportunity
-GET  /api/clusters               – list all clusters
-GET  /api/clusters/<id>/opportunities – opportunities in cluster
+GET  /api/opportunities          - list (with optional filters)
+GET  /api/opportunities/<id>     - single opportunity
+GET  /api/clusters               - list all clusters
+GET  /api/clusters/<id>/opportunities - opportunities in cluster
 """
 
 from flask import Blueprint, jsonify, request, current_app

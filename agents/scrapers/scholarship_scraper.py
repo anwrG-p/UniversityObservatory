@@ -1,7 +1,7 @@
 """
 agents/scrapers/scholarship_scraper.py
 =======================================
-ScholarshipScraperAgent – collects scholarships, fellowships, and grants.
+ScholarshipScraperAgent - collects scholarships, fellowships, and grants.
 """
 
 import random
@@ -14,7 +14,7 @@ from database.db_manager import DatabaseManager
 
 _SCHOLARSHIP_POOL: List[Dict] = [
     {
-        "title":       "Google PhD Fellowship – Machine Learning",
+        "title":       "Google PhD Fellowship - Machine Learning",
         "description": (
             "Supports outstanding PhD students in CS. Fellows receive a stipend, "
             "mentorship from Google researchers, and opportunities to present at "
@@ -40,13 +40,13 @@ _SCHOLARSHIP_POOL: List[Dict] = [
         "type":        "scholarship",
     },
     {
-        "title":       "Marie Skłodowska-Curie Actions – Individual Fellowship",
+        "title":       "Marie SkÅodowska-Curie Actions - Individual Fellowship",
         "description": (
             "Prestigious EU-funded fellowship for experienced researchers. Supports "
             "interdisciplinary research mobility across Europe. Provides living "
             "allowance, mobility allowance, and family allowance."
         ),
-        "source":      "European Commission – Horizon Europe",
+        "source":      "European Commission - Horizon Europe",
         "location":    "European Union",
         "eligibility": "Experienced researchers (PhD + experience) of any nationality",
         "url":         "https://marie-sklodowska-curie-actions.ec.europa.eu/",
@@ -118,7 +118,7 @@ _SCHOLARSHIP_POOL: List[Dict] = [
         "type":        "scholarship",
     },
     {
-        "title":       "Fulbright Scholar Program – AI & Technology",
+        "title":       "Fulbright Scholar Program - AI & Technology",
         "description": (
             "The Fulbright Program funds international study, research, and teaching. "
             "Scholars in AI, data science, and technology are eligible for grants "
@@ -137,7 +137,7 @@ _SCHOLARSHIP_POOL: List[Dict] = [
             "Machine Learning, or Data Science at the University of Oxford. "
             "Covers tuition, accommodation, and research expenses."
         ),
-        "source":      "AfOx – Africa Oxford Initiative",
+        "source":      "AfOx - Africa Oxford Initiative",
         "location":    "Oxford, UK",
         "eligibility": "African nationals applying to Oxford MSc/DPhil in AI or CS",
         "url":         "https://www.africaoxford.ox.ac.uk/",
@@ -191,7 +191,7 @@ class ScholarshipScraperAgent(BaseAgent):
         total   += fc_inserted
         fetched += fc_candidates
         if fc_result.get("status") == "firecrawl_unavailable":
-            self.logger.info("Firecrawl unavailable — using RSS fallback for scholarships.")
+            self.logger.info("Firecrawl unavailable -- using RSS fallback for scholarships.")
 
         # Always also run RSS (works on Render without Firecrawl)
         rss_result = ScholarshipRSSAgent(self.db).execute(force_insert=force_insert)
@@ -215,8 +215,11 @@ class ScholarshipScraperAgent(BaseAgent):
 
     def _run_mock(self) -> Dict[str, Any]:
         records  = random.sample(_SCHOLARSHIP_POOL, random.randint(5, len(_SCHOLARSHIP_POOL)))
+        existing_urls = {row["url"] for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")}
         inserted = 0
         for rec in records:
+            if rec.get("url", "") in existing_urls:
+                continue
             rec.setdefault("type", "scholarship")
             rec["deadline"] = (datetime.utcnow() + timedelta(days=random.randint(45, 240))).strftime("%Y-%m-%d")
             rec["category"] = rec["type"]

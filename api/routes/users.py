@@ -3,9 +3,9 @@ api/routes/users.py
 ====================
 REST endpoints for Users resource.
 
-GET   /api/users       – list all users
-POST  /api/users       – create user
-GET   /api/users/<id>  – get single user
+GET   /api/users       - list all users
+POST  /api/users       - create user
+GET   /api/users/<id>  - get single user
 """
 
 from flask import Blueprint, jsonify, request, current_app

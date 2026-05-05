@@ -1,13 +1,13 @@
 """
 agents/scrapers/internship_scraper.py
 =====================================
-InternshipScraperAgent – collects internship listings.
+InternshipScraperAgent - collects internship listings.
 
 Real-data mode (USE_REAL_DATA=True)
 ------------------------------------
 Delegates to:
-  1. InternshipFirecrawlAgent  – scrapes AI job boards via self-hosted Firecrawl
-  2. RemotiveAPIAgent          – fetches remote AI/DS jobs from Remotive public API
+  1. InternshipFirecrawlAgent  - scrapes AI job boards via self-hosted Firecrawl
+  2. RemotiveAPIAgent          - fetches remote AI/DS jobs from Remotive public API
 
 Mock-data mode (USE_REAL_DATA=False, default)
 ----------------------------------------------
@@ -29,7 +29,7 @@ from database.db_manager import DatabaseManager
 
 _INTERNSHIP_POOL: List[Dict] = [
     {
-        "title":       "Machine Learning Intern – DeepMind",
+        "title":       "Machine Learning Intern - DeepMind",
         "description": (
             "Research internship at Google DeepMind. Work on reinforcement learning, "
             "multi-agent systems, and large-scale model training. Requires Python, "
@@ -41,7 +41,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://deepmind.google/careers/",
     },
     {
-        "title":       "Data Science Intern – Amazon",
+        "title":       "Data Science Intern - Amazon",
         "description": (
             "Join Amazon's Data Science team to develop predictive models for "
             "supply-chain optimization. You'll use Python, SQL, and AWS SageMaker to "
@@ -53,7 +53,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://www.amazon.jobs/",
     },
     {
-        "title":       "AI Research Intern – INRIA",
+        "title":       "AI Research Intern - INRIA",
         "description": (
             "INRIA offers funded research internships in AI, distributed computing, "
             "and formal verification. Work alongside top European researchers and "
@@ -65,7 +65,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://www.inria.fr/en/internships",
     },
     {
-        "title":       "NLP Engineering Intern – Hugging Face",
+        "title":       "NLP Engineering Intern - Hugging Face",
         "description": (
             "Develop and fine-tune open-source language models. Contribute to the "
             "Transformers library, build evaluation benchmarks, and publish results. "
@@ -77,7 +77,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://huggingface.co/jobs",
     },
     {
-        "title":       "Computer Vision Intern – Valeo",
+        "title":       "Computer Vision Intern - Valeo",
         "description": (
             "Work on perception systems for autonomous vehicles. Implement and "
             "evaluate 3D object detection, lane-keeping, and sensor-fusion algorithms "
@@ -89,7 +89,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://www.valeo.com/en/careers/",
     },
     {
-        "title":       "MLOps Intern – Spotify",
+        "title":       "MLOps Intern - Spotify",
         "description": (
             "Build infrastructure for Spotify's machine learning platform. Design "
             "feature stores, model monitoring pipelines, and CI/CD workflows for ML "
@@ -101,7 +101,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://www.lifeatspotify.com/jobs",
     },
     {
-        "title":       "Bioinformatics AI Intern – Institut Pasteur",
+        "title":       "Bioinformatics AI Intern - Institut Pasteur",
         "description": (
             "Apply deep learning to genomic sequence analysis and protein structure "
             "prediction. Collaborate with biologists and computational scientists. "
@@ -113,7 +113,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://research.pasteur.fr/en/jobs/",
     },
     {
-        "title":       "Quantitative Research Intern – BNP Paribas",
+        "title":       "Quantitative Research Intern - BNP Paribas",
         "description": (
             "Develop ML-based pricing models for financial derivatives. Work with "
             "time-series data, risk models, and large quantitative datasets. "
@@ -125,7 +125,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://group.bnpparibas/en/careers",
     },
     {
-        "title":       "Federated Learning Research Intern – Nokia Bell Labs",
+        "title":       "Federated Learning Research Intern - Nokia Bell Labs",
         "description": (
             "Research privacy-preserving ML for edge devices. Design federated "
             "protocols, implement differential privacy guarantees, and benchmark "
@@ -137,7 +137,7 @@ _INTERNSHIP_POOL: List[Dict] = [
         "url":         "https://www.nokia.com/careers/",
     },
     {
-        "title":       "Robotics & RL Intern – Boston Dynamics",
+        "title":       "Robotics & RL Intern - Boston Dynamics",
         "description": (
             "Develop reinforcement learning controllers for quadruped and manipulator "
             "robots. Work in simulation (PyBullet / MuJoCo) and transfer policies "
@@ -213,8 +213,11 @@ class InternshipScraperAgent(BaseAgent):
 
     def _run_mock(self) -> Dict[str, Any]:
         records  = random.sample(_INTERNSHIP_POOL, random.randint(6, len(_INTERNSHIP_POOL)))
+        existing_urls = {row["url"] for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")}
         inserted = 0
         for rec in records:
+            if rec.get("url", "") in existing_urls:
+                continue
             rec["type"]     = "internship"
             rec["deadline"] = (datetime.utcnow() + timedelta(days=random.randint(30, 180))).strftime("%Y-%m-%d")
             rec["category"] = "internship"

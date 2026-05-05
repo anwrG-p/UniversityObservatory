@@ -32,7 +32,7 @@ class RelevanceMatcherAgent(BaseAgent):
         opportunities = self.db.get_opportunities()
 
         if not users or not opportunities:
-            self.logger.warning("Empty users or opportunities – skipping matching.")
+            self.logger.warning("Empty users or opportunities - skipping matching.")
             return {"status": "ok", "agent": self.name, "matches": 0}
 
         opp_texts = [

@@ -359,7 +359,7 @@ class FirecrawlScraperBase(BaseAgent):
     # BaseAgent contract
     # ------------------------------------------------------------------
 
-    def run(self, **kwargs) -> Dict[str, Any]:
+    def run(self, force_insert: bool = False, **kwargs) -> Dict[str, Any]:
         if not self._client.is_available():
             self.logger.warning(
                 "Firecrawl not available at %s — returning empty result. "
@@ -370,6 +370,7 @@ class FirecrawlScraperBase(BaseAgent):
                 "status": "firecrawl_unavailable",
                 "agent":  self.name,
                 "inserted": 0,
+                "candidates": 0,
             }
 
         self.logger.info("Scraping %d URLs via Firecrawl…", len(self._TARGET_URLS))
@@ -387,7 +388,7 @@ class FirecrawlScraperBase(BaseAgent):
                 self.logger.info("  %s → %d candidates extracted", url, len(records))
             all_records.extend(records)
 
-        inserted = self._insert_deduped(all_records)
+        inserted = self._insert_deduped(all_records, force_insert=force_insert)
         return {
             "status":       "ok",
             "agent":        self.name,
@@ -401,18 +402,20 @@ class FirecrawlScraperBase(BaseAgent):
     # Deduplication helper
     # ------------------------------------------------------------------
 
-    def _insert_deduped(self, records: List[Dict]) -> int:
+    def _insert_deduped(self, records: List[Dict], force_insert: bool = False) -> int:
         """Insert records, skipping those whose URL already exists in DB."""
-        existing_urls = {
-            row["url"]
-            for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")
-        }
+        existing_urls = set()
+        if not force_insert:
+            existing_urls = {
+                row["url"]
+                for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")
+            }
         inserted = 0
         seen: set = set()
         for rec in records:
             url = rec.get("url", "")
             title_key = rec.get("title", "").lower().strip()
-            if url in existing_urls or title_key in seen:
+            if not force_insert and (url in existing_urls or title_key in seen):
                 continue
             seen.add(title_key)
             if url:

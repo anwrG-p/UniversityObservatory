@@ -1,12 +1,12 @@
 """
 data_collection/api_agent.py
 ==============================
-Real-data API agents using free, public APIs — no API key required.
+Real-data API agents using free, public APIs -- no API key required.
 
 Agents
 ------
-RemotiveAPIAgent  – Fetches remote AI/Data Science jobs from remotive.com
-ArXivAPIAgent     – Fetches recent AI/ML research papers from arXiv
+RemotiveAPIAgent  - Fetches remote AI/Data Science jobs from remotive.com
+ArXivAPIAgent     - Fetches recent AI/ML research papers from arXiv
 
 Both agents normalise results to the same DB schema dict format:
   {title, description, type, category, source, location, eligibility,
@@ -15,7 +15,7 @@ Both agents normalise results to the same DB schema dict format:
 Design
 ------
 * Both extend BaseAgent so they plug directly into CoordinatorAgent.
-* Both have ``run()`` → dict with inserted count (same contract as scrapers).
+* Both have ``run()`` -> dict with inserted count (same contract as scrapers).
 * Graceful fallback: if the API is unreachable, return status='api_unavailable'.
 """
 
@@ -34,9 +34,9 @@ import config
 logger = logging.getLogger(__name__)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # Shared deduplication mixin
-# ═══════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 class _DeduplicateMixin:
     """Mixin that provides URL-based deduplication on insert."""
@@ -75,9 +75,9 @@ class _DeduplicateMixin:
         return inserted
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Remotive API agent  –  remote AI/Data Science jobs
-# ═══════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Remotive API agent  -  remote AI/Data Science jobs
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
     """
@@ -88,9 +88,9 @@ class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
 
     Categories used
     ---------------
-    data           → internship/job
-    data-science   → internship/job
-    machine-learning → internship/job
+    data           -> internship/job
+    data-science   -> internship/job
+    machine-learning -> internship/job
     """
 
     _CATEGORIES = ["data", "data-science", "machine-learning"]
@@ -108,7 +108,7 @@ class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
 
         for category in self._CATEGORIES:
             jobs = self._fetch_category(category)
-            self.logger.info("Remotive[%s] → %d jobs", category, len(jobs))
+            self.logger.info("Remotive[%s] -> %d jobs", category, len(jobs))
             all_records.extend(jobs)
 
         if not all_records:
@@ -149,7 +149,7 @@ class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
 
     @staticmethod
     def _normalise(job: Dict) -> Dict:
-        """Convert a Remotive job dict → observatory opportunity dict."""
+        """Convert a Remotive job dict -> observatory opportunity dict."""
         # Strip HTML tags from description
         desc_html = job.get("description", "")
         desc      = re.sub(r'<[^>]+>', ' ', desc_html)
@@ -177,9 +177,9 @@ class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
         }
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# ArXiv API agent  –  recent AI/ML research papers → research_project opps
-# ═══════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ArXiv API agent  -  recent AI/ML research papers -> research_project opps
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
     """
@@ -281,7 +281,7 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
             # Convert ArXiv abstract URL to PDF-friendly URL
             url     = url.replace("http://", "https://")
 
-            # Published date → use as "deadline" (when the paper was posted)
+            # Published date -> use as "deadline" (when the paper was posted)
             deadline = ""
             if pub_el is not None and pub_el.text:
                 try:
@@ -327,14 +327,14 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
         return cleaned[:1200] if len(cleaned) > 1200 else cleaned
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Scholarship RSS agent  –  no Firecrawl needed, works on any host
-# ═══════════════════════════════════════════════════════════════════════════
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Scholarship RSS agent  -  no Firecrawl needed, works on any host
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 class ScholarshipRSSAgent(_DeduplicateMixin, BaseAgent):
     """
     Fetches scholarship/fellowship opportunities from public RSS feeds.
-    Requires only the `requests` library — no Firecrawl or API key needed.
+    Requires only the `requests` library -- no Firecrawl or API key needed.
     Works perfectly on Render and any other cloud host.
 
     Feeds used
@@ -367,7 +367,7 @@ class ScholarshipRSSAgent(_DeduplicateMixin, BaseAgent):
 
         for feed in self._RSS_FEEDS:
             items = self._fetch_rss(feed["url"], feed["type"])
-            self.logger.info("RSS[%s] → %d items", feed["url"].split("/")[2], len(items))
+            self.logger.info("RSS[%s] -> %d items", feed["url"].split("/")[2], len(items))
             all_records.extend(items)
 
         if not all_records:
@@ -406,19 +406,20 @@ class ScholarshipRSSAgent(_DeduplicateMixin, BaseAgent):
         # Handle both RSS 2.0 (<channel><item>) and Atom (<entry>)
         items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
         records = []
-        for item in items:
-            def _text(tag: str) -> str:
-                el = item.find(tag)
-                if el is None:
-                    # Try Atom namespace
-                    el = item.find(f"{{http://www.w3.org/2005/Atom}}{tag}")
-                return (el.text or "").strip() if el is not None else ""
 
-            title = re.sub(r'<[^>]+>', '', _text("title"))
-            link  = _text("link") or _text("guid")
-            desc  = re.sub(r'<[^>]+>', ' ', _text("description") or _text("summary"))
+        def _text(item, tag: str) -> str:
+            """Get text of a tag, trying plain and Atom namespace."""
+            el = item.find(tag)
+            if el is None:
+                el = item.find(f"{{http://www.w3.org/2005/Atom}}{tag}")
+            return (el.text or "").strip() if el is not None else ""
+
+        for item in items:
+            title = re.sub(r'<[^>]+>', '', _text(item, "title"))
+            link  = _text(item, "link") or _text(item, "guid")
+            desc  = re.sub(r'<[^>]+>', ' ', _text(item, "description") or _text(item, "summary"))
             desc  = re.sub(r'\s{2,}', ' ', desc).strip()[:1200]
-            pub   = _text("pubDate") or _text("published")
+            pub   = _text(item, "pubDate") or _text(item, "published")
 
             if not title or not link:
                 continue

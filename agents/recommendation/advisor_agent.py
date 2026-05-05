@@ -35,7 +35,7 @@ class AdvisorAgent(BaseAgent):
 
     def run(self, matches: List[Dict] = None, **kwargs) -> Dict[str, Any]:
         if not matches:
-            self.logger.warning("No matches received – AdvisorAgent idle.")
+            self.logger.warning("No matches received - AdvisorAgent idle.")
             return {"status": "ok", "agent": self.name, "persisted": 0}
 
         users = {u["id"]: u for u in self.db.get_users()}
@@ -95,7 +95,7 @@ class AdvisorAgent(BaseAgent):
 
     @staticmethod
     def _deadline_boost(deadline_str: str) -> float:
-        """Closer deadlines get a higher urgency boost (0–1)."""
+        """Closer deadlines get a higher urgency boost (0-1)."""
         if not deadline_str:
             return 0.5
         try:

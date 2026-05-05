@@ -1,7 +1,7 @@
 """
 agents/scrapers/certification_scraper.py
 =========================================
-CertificationScraperAgent – collects courses, certifications, webinars,
+CertificationScraperAgent - collects courses, certifications, webinars,
 and research projects from MOOC platforms and academic portals.
 """
 
@@ -15,7 +15,7 @@ from database.db_manager import DatabaseManager
 
 _CERT_POOL: List[Dict] = [
     {
-        "title":       "Deep Learning Specialization – Coursera (DeepLearning.AI)",
+        "title":       "Deep Learning Specialization - Coursera (DeepLearning.AI)",
         "description": (
             "Five-course specialization covering neural networks, CNNs, RNNs, "
             "transformers, and practical ML project structuring. Taught by Andrew Ng. "
@@ -28,7 +28,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "MLOps Specialization – Duke University / Coursera",
+        "title":       "MLOps Specialization - Duke University / Coursera",
         "description": (
             "Learn to operationalize ML models: data pipelines, model monitoring, "
             "drift detection, CI/CD for ML, Docker, Kubernetes, and cloud deployment "
@@ -41,7 +41,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "Applied Data Science with Python – MIT / edX",
+        "title":       "Applied Data Science with Python - MIT / edX",
         "description": (
             "MIT professional certificate covering statistics, machine learning, "
             "data wrangling, visualization, and a capstone project. "
@@ -54,7 +54,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "Reinforcement Learning Specialization – University of Alberta",
+        "title":       "Reinforcement Learning Specialization - University of Alberta",
         "description": (
             "Four-course series on foundations and advanced RL: multi-armed bandits, "
             "temporal-difference learning, function approximation, and a capstone. "
@@ -80,7 +80,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "AWS Certified Machine Learning – Specialty",
+        "title":       "AWS Certified Machine Learning - Specialty",
         "description": (
             "Industry-recognized certification for ML practitioners using AWS. "
             "Topics: data engineering, EDA, ML modeling, and AWS SageMaker. "
@@ -93,7 +93,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "NeurIPS 2025 – Workshops & Tutorials (Virtual Pass)",
+        "title":       "NeurIPS 2025 - Workshops & Tutorials (Virtual Pass)",
         "description": (
             "Participate in NeurIPS workshops, tutorials, and poster sessions covering "
             "the latest research in ML, AI safety, generative models, and more. "
@@ -119,7 +119,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "AI Safety Fundamentals – BlueDot Impact",
+        "title":       "AI Safety Fundamentals - BlueDot Impact",
         "description": (
             "8-week virtual course on technical AI safety: robustness, alignment, "
             "interpretability, and governance. Weekly readings, cohort discussions, "
@@ -132,7 +132,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "course",
     },
     {
-        "title":       "Open Source Research Project – Apache Spark ML",
+        "title":       "Open Source Research Project - Apache Spark ML",
         "description": (
             "Contribute to Apache Spark's MLlib and Structured Streaming. "
             "Work on distributed feature engineering, model serialization, "
@@ -145,7 +145,7 @@ _CERT_POOL: List[Dict] = [
         "type":        "research_project",
     },
     {
-        "title":       "Kaggle AI Research Grant – Data Science Competition",
+        "title":       "Kaggle AI Research Grant - Data Science Competition",
         "description": (
             "Kaggle's grant program for open AI research. Teams receive cloud compute "
             "credits, mentorship from Kaggle Grandmasters, and a cash prize. "
@@ -215,8 +215,11 @@ class CertificationScraperAgent(BaseAgent):
 
     def _run_mock(self) -> Dict[str, Any]:
         records  = random.sample(_CERT_POOL, random.randint(6, len(_CERT_POOL)))
+        existing_urls = {row["url"] for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")}
         inserted = 0
         for rec in records:
+            if rec.get("url", "") in existing_urls:
+                continue
             rec["deadline"] = (datetime.utcnow() + timedelta(days=random.randint(90, 365))).strftime("%Y-%m-%d")
             rec["category"] = rec["type"]
             self.db.insert_opportunity(rec)

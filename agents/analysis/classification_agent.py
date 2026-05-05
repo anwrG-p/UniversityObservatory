@@ -43,7 +43,7 @@ class ClassificationAgent(BaseAgent):
     def run(self, **kwargs) -> Dict[str, Any]:
         opportunities = self.db.get_opportunities()
         if not opportunities:
-            self.logger.warning("No opportunities found – skipping classification.")
+            self.logger.warning("No opportunities found - skipping classification.")
             return {"status": "ok", "agent": self.name, "classified": 0}
 
         # Build / load the model

@@ -67,7 +67,7 @@ LOG_LEVEL  = "INFO"
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 
 # ---------------------------------------------------------------------------
-# Firecrawl (self-hosted)  –  https://github.com/firecrawl/firecrawl
+# Firecrawl (self-hosted)  -  https://github.com/firecrawl/firecrawl
 # Run locally: docker compose up  (defaults to port 3002)
 # ---------------------------------------------------------------------------
 FIRECRAWL_URL     = os.getenv("FIRECRAWL_URL",     "http://localhost:3002")
@@ -81,9 +81,9 @@ USE_REAL_DATA = os.getenv("USE_REAL_DATA", "false").lower() == "true"
 # Real scrape targets (Firecrawl will fetch these URLs)
 # ---------------------------------------------------------------------------
 INTERNSHIP_SCRAPE_URLS = [
-    "https://ai-jobs.net/", 
+    "https://ai-jobs.net/",
     "https://www.euraxess.eu/jobs/search?freeTextKeyword=machine+learning",
-    
+    "https://jobs.lever.co/",
 ]
 SCHOLARSHIP_SCRAPE_URLS = [
     "https://www.scholars4dev.com/category/scholarships-by-subject/science-technology/",
@@ -99,5 +99,5 @@ COURSE_SCRAPE_URLS = [
 # ---------------------------------------------------------------------------
 REMOTIVE_API_URL = "https://remotive.com/api/remote-jobs"
 ARXIV_API_URL    = "https://export.arxiv.org/api/query"
-ARXIV_SEARCH_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:stat.ML"
+ARXIV_SEARCH_QUERY = "cat:cs.AI OR cat:cs.LG OR cat:stat.ML"
 ARXIV_MAX_RESULTS   = 50

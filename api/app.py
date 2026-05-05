@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def create_app(db: DatabaseManager = None) -> Flask:
     """
-    Application factory – creates and configures the Flask app.
+    Application factory - creates and configures the Flask app.
 
     Parameters
     ----------

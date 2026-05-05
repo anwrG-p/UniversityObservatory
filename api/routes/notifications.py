@@ -1,8 +1,8 @@
 """
 api/routes/notifications.py
 ============================
-GET   /api/notifications/<user_id>          – all notifications for user
-PATCH /api/notifications/<id>/read          – mark as read
+GET   /api/notifications/<user_id>          - all notifications for user
+PATCH /api/notifications/<id>/read          - mark as read
 """
 
 from flask import Blueprint, jsonify, request, current_app
