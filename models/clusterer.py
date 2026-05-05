@@ -106,10 +106,19 @@ class OpportunityClusterer:
         feature_names = self._vectorizer.get_feature_names_out()
         centroids     = self._model.cluster_centers_
         meta = {}
+        seen_names = set()
         for idx, centroid in enumerate(centroids):
             top_indices = centroid.argsort()[-8:][::-1]
             top_terms   = [feature_names[i] for i in top_indices]
-            name = self._name_from_terms(idx, top_terms)
+            base_name = self._name_from_terms(idx, top_terms)
+            
+            name = base_name
+            counter = 2
+            while name in seen_names:
+                name = f"{base_name} {counter}"
+                counter += 1
+            seen_names.add(name)
+            
             meta[idx] = {
                 "name":     name,
                 "keywords": ", ".join(top_terms),
