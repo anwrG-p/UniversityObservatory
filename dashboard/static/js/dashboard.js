@@ -390,6 +390,71 @@ async function runPipeline() {
   }
 }
 
+// ── Resume Upload ──────────────────────────────────────────
+async function handleResumeUpload(e) {
+  e.preventDefault();
+  const btn = $("btn-upload-resume");
+  const resultDiv = $("resume-result");
+  const form = $("resume-form");
+  
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Processing PDF...`;
+  resultDiv.style.display = "none";
+  resultDiv.innerHTML = "";
+
+  const formData = new FormData();
+  formData.append("name", $("resume-name").value);
+  formData.append("email", $("resume-email").value);
+  formData.append("file", $("resume-file").files[0]);
+
+  try {
+    const res = await fetch(`${API}/api/users/upload-resume`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Upload failed");
+
+    let html = `<div style="background: var(--bg-surface); padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">`;
+    html += `<h3 style="color: var(--accent-primary); margin-bottom: 1rem;">✅ Top Matches for ${$("resume-name").value}</h3>`;
+    
+    if (data.recommendations && data.recommendations.length > 0) {
+      html += `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+      data.recommendations.forEach(r => {
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg-deep); border-radius: 4px;">
+            <div>
+              <span class="badge ${TYPE_BADGE[r.type] || "badge-blue"}" style="margin-right: 8px;">${r.type}</span>
+              <a href="${r.url}" target="_blank" style="color: #e2e8f0; text-decoration: none; font-weight: 500;">${r.title}</a>
+            </div>
+            <div style="color: var(--accent-success); font-weight: bold;">${r.score}% Match</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    } else {
+      html += `<p style="color: #94a3b8;">No strong matches found yet. Check back later!</p>`;
+    }
+    html += `</div>`;
+    
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = "block";
+    
+    // Refresh users list in the background
+    loadUsers();
+    form.reset();
+    showToast("Resume processed successfully!");
+
+  } catch (err) {
+    resultDiv.innerHTML = `<div class="error" style="padding: 1rem; border-radius: 4px;">❌ Error: ${err.message}</div>`;
+    resultDiv.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Upload PDF & Match";
+  }
+}
+
 // ── Refresh all ────────────────────────────────────────────
 async function refreshAll() {
   await loadStats();
@@ -402,6 +467,7 @@ async function refreshAll() {
 async function init() {
   // Event listeners
   $("btn-run-pipeline").addEventListener("click", runPipeline);
+  $("resume-form").addEventListener("submit", handleResumeUpload);
   $("btn-filter").addEventListener("click", () => {
     loadOpportunities($("filter-type").value, $("filter-location").value);
   });

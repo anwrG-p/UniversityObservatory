@@ -41,6 +41,20 @@
       <div class="stat-card"><div class="stat-icon">🔔</div><div class="stat-value" id="stat-notifs">—</div><div class="stat-label">Unread Alerts</div></div>
     </div>
 
+    <!-- Upload Resume -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-header"><h2>📄 Instant Resume Match</h2></div>
+      <div class="card-body">
+        <form id="resume-form" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="resume-name" placeholder="Your Name" required style="padding: 0.5rem; background: var(--bg-deep); border: 1px solid var(--border); color: #fff; border-radius: 4px; flex: 1; min-width: 150px;"/>
+          <input type="email" id="resume-email" placeholder="Email Address" required style="padding: 0.5rem; background: var(--bg-deep); border: 1px solid var(--border); color: #fff; border-radius: 4px; flex: 1; min-width: 150px;"/>
+          <input type="file" id="resume-file" accept=".pdf" required style="color: #94a3b8;"/>
+          <button type="submit" class="btn btn-primary" id="btn-upload-resume">Upload PDF & Match</button>
+        </form>
+        <div id="resume-result" style="margin-top: 1.5rem; display: none;"></div>
+      </div>
+    </div>
+
     <!-- Charts row -->
     <div class="two-col">
 

@@ -43,3 +43,75 @@ def create_user():
         return jsonify({"id": new_id, "message": "User created"}), 201
     except Exception as exc:
         return jsonify({"error": str(exc)}), 409
+
+@users_bp.route("/users/upload-resume", methods=["POST"])
+def upload_resume():
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    
+    file = request.files["file"]
+    name = request.form.get("name", "Anonymous")
+    email = request.form.get("email", "anonymous@example.com")
+    
+    if not file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "Only PDF resumes are supported"}), 400
+        
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + " "
+    except Exception as e:
+        return jsonify({"error": f"Failed to parse PDF: {str(e)}"}), 500
+        
+    # Create User
+    user_data = {
+        "name": name,
+        "email": email,
+        "profile": text[:2000],
+        "interests": "",
+        "skills": ""
+    }
+    
+    try:
+        user_id = _db().insert_user(user_data)
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 409
+        
+    # Generate recommendations instantly for this user
+    try:
+        from models.recommender import ContentBasedRecommender
+        recommender = ContentBasedRecommender()
+        opportunities = _db().get_opportunities()
+        
+        opp_texts = [
+            f"{o['title']} {o['description']} {o.get('eligibility', '')}"
+            for o in opportunities
+        ]
+        
+        # We need at least some opportunities to match against
+        if opportunities:
+            recommender.fit(opp_texts)
+            scores = recommender.match(text, opp_texts)
+            
+            matches_response = []
+            for idx, score in scores:
+                opp = opportunities[idx]
+                _db().insert_recommendation(user_id, opp["id"], float(score), "")
+                matches_response.append({
+                    "title": opp["title"],
+                    "score": round(score * 100, 1),
+                    "url": opp["url"],
+                    "type": opp["type"]
+                })
+        else:
+            matches_response = []
+            
+        return jsonify({
+            "message": "Resume processed and matched!",
+            "user_id": user_id,
+            "recommendations": matches_response[:5] # Return top 5
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate matches: {str(e)}"}), 500
