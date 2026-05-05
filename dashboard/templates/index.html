@@ -1,177 +1,414 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="description" content="Intelligent University Observatory – Multi-Agent System for Internship, Project, Certification and Scholarship Management"/>
-  <title>University Observatory | MAS Dashboard</title>
+  <title>University Observatory · MAS Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link rel="stylesheet" href="/static/css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="app-wrapper">
 
-  <!-- ─── Header ─────────────────────────────────────────── -->
-  <header class="header">
-    <div class="header-logo">
-      <div class="logo-icon">🔭</div>
-      <h1>University Observatory</h1>
+<!-- Animated star/grid background -->
+<div class="bg-canvas" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+  <div class="bg-stars"></div>
+</div>
+
+<div class="layout">
+
+  <!-- ─── Sidebar ───────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Observatory</div>
+        <div class="brand-sub">University MAS</div>
+      </div>
     </div>
-    <div class="header-actions">
-      <span class="badge badge-green">● Live</span>
-      <button class="btn btn-primary" id="btn-run-pipeline">
-        ⚡ Run Pipeline
+
+    <nav class="nav">
+      <div class="nav-section">Workspace</div>
+      <a class="nav-link active" href="#overview" data-target="overview">
+        <span class="nav-icon">◐</span><span>Overview</span>
+      </a>
+      <a class="nav-link" href="#resume" data-target="resume">
+        <span class="nav-icon">✦</span><span>Resume Match</span>
+      </a>
+      <a class="nav-link" href="#analytics" data-target="analytics">
+        <span class="nav-icon">▦</span><span>Analytics</span>
+      </a>
+      <a class="nav-link" href="#opportunities" data-target="opportunities">
+        <span class="nav-icon">◇</span><span>Opportunities</span>
+      </a>
+      <a class="nav-link" href="#recommendations" data-target="recommendations">
+        <span class="nav-icon">◉</span><span>Recommendations</span>
+      </a>
+      <a class="nav-link" href="#clusters" data-target="clusters">
+        <span class="nav-icon">⬡</span><span>Clusters</span>
+      </a>
+      <a class="nav-link" href="#notifications" data-target="notifications">
+        <span class="nav-icon">◊</span><span>Notifications</span>
+      </a>
+
+      <div class="nav-section">System</div>
+      <button class="nav-link nav-button" id="btn-run-pipeline">
+        <span class="nav-icon">▶</span><span>Run Pipeline</span>
       </button>
+      <button class="nav-link nav-button" id="btn-theme-toggle" aria-label="Toggle theme">
+        <span class="nav-icon" id="theme-icon">☾</span><span id="theme-label">Light mode</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="sys-status">
+        <span class="dot dot-pulse"></span>
+        <div>
+          <div class="sys-label">All agents online</div>
+          <div class="sys-sub">Mesa scheduler · running</div>
+        </div>
+      </div>
     </div>
-  </header>
+  </aside>
 
-  <!-- ─── Main ────────────────────────────────────────────── -->
-  <main class="main">
+  <!-- ─── Main ───────────────────────────────────────────── -->
+  <main class="main" id="main-scroll">
 
-    <!-- Pipeline status -->
-    <div id="pipeline-status"></div>
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <input type="text" id="global-search" placeholder="Search opportunities, clusters, organizations…" autocomplete="off"/>
+        <kbd>⌘K</kbd>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge badge-green" id="live-badge"><span class="dot dot-pulse-tiny"></span> Live</span>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero" id="overview">
+      <div class="hero-inner">
+        <div class="hero-eyebrow">
+          <span>Multi-Agent System</span>
+          <span class="dot-sep">·</span>
+          <span>Mesa Orchestrated</span>
+          <span class="dot-sep">·</span>
+          <span>AI-Powered Recommendations</span>
+        </div>
+        <h1 class="hero-title">
+          Discover the right <em>opportunity</em><br/>
+          across academia &amp; industry.
+        </h1>
+        <p class="hero-sub">
+          A constellation of agents continuously observes internships, research projects,
+          scholarships, certifications, postdocs and visiting positions — then classifies,
+          clusters, and recommends them to you.
+        </p>
+      </div>
+      <div id="pipeline-status"></div>
+    </section>
 
     <!-- Stat cards -->
     <p class="section-title">Overview</p>
     <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value" id="stat-opps">—</div><div class="stat-label">Opportunities</div></div>
-      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="stat-users">—</div><div class="stat-label">Users</div></div>
-      <div class="stat-card"><div class="stat-icon">🧩</div><div class="stat-value" id="stat-clusters">—</div><div class="stat-label">Clusters</div></div>
-      <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-value" id="stat-recs">—</div><div class="stat-label">Recommendations</div></div>
-      <div class="stat-card"><div class="stat-icon">🔔</div><div class="stat-value" id="stat-notifs">—</div><div class="stat-label">Unread Alerts</div></div>
-    </div>
-
-    <!-- Upload Resume -->
-    <div class="card" style="margin-bottom:1.5rem">
-      <div class="card-header"><h2>📄 Instant Resume Match</h2></div>
-      <div class="card-body">
-        <form id="resume-form" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="resume-name" placeholder="Your Name" required style="padding: 0.5rem; background: var(--bg-deep); border: 1px solid var(--border); color: #fff; border-radius: 4px; flex: 1; min-width: 150px;"/>
-          <input type="email" id="resume-email" placeholder="Email Address" required style="padding: 0.5rem; background: var(--bg-deep); border: 1px solid var(--border); color: #fff; border-radius: 4px; flex: 1; min-width: 150px;"/>
-          <input type="file" id="resume-file" accept=".pdf" required style="color: #94a3b8;"/>
-          <button type="submit" class="btn btn-primary" id="btn-upload-resume">Upload PDF & Match</button>
-        </form>
-        <div id="resume-result" style="margin-top: 1.5rem; display: none;"></div>
+      <div class="stat-card" data-accent="blue">
+        <div class="stat-row"><div class="stat-icon-wrap stat-i-blue">◇</div><div class="stat-trend">▲</div></div>
+        <div class="stat-value" id="stat-opps" data-counter>—</div>
+        <div class="stat-label">Opportunities</div>
+      </div>
+      <div class="stat-card" data-accent="purple">
+        <div class="stat-row"><div class="stat-icon-wrap stat-i-purple">◉</div><div class="stat-trend">▲</div></div>
+        <div class="stat-value" id="stat-users" data-counter>—</div>
+        <div class="stat-label">Users</div>
+      </div>
+      <div class="stat-card" data-accent="teal">
+        <div class="stat-row"><div class="stat-icon-wrap stat-i-teal">⬡</div><div class="stat-trend">▲</div></div>
+        <div class="stat-value" id="stat-clusters" data-counter>—</div>
+        <div class="stat-label">Clusters</div>
+      </div>
+      <div class="stat-card" data-accent="green">
+        <div class="stat-row"><div class="stat-icon-wrap stat-i-green">★</div><div class="stat-trend">▲</div></div>
+        <div class="stat-value" id="stat-recs" data-counter>—</div>
+        <div class="stat-label">Recommendations</div>
+      </div>
+      <div class="stat-card" data-accent="orange">
+        <div class="stat-row"><div class="stat-icon-wrap stat-i-orange">◊</div><div class="stat-trend">▲</div></div>
+        <div class="stat-value" id="stat-notifs" data-counter>—</div>
+        <div class="stat-label">Unread Alerts</div>
       </div>
     </div>
 
-    <!-- Charts row -->
-    <div class="two-col">
-
-      <!-- Distribution doughnut -->
-      <div class="card">
-        <div class="card-header"><h2>📊 Opportunity Distribution</h2></div>
-        <div class="card-body"><div class="chart-box"><canvas id="chart-distribution"></canvas></div></div>
+    <!-- Resume Match -->
+    <section id="resume">
+      <p class="section-title">Resume Match</p>
+      <div class="card card-feature">
+        <div class="card-header">
+          <div class="card-title-wrap">
+            <span class="card-title-icon ti-blue">✦</span>
+            <h2>Instant Resume Match</h2>
+          </div>
+          <span class="muted">Upload PDF · Get personalized matches</span>
+        </div>
+        <div class="card-body">
+          <form id="resume-form" class="resume-form">
+            <input type="text" id="resume-name" placeholder="Your full name" required/>
+            <input type="email" id="resume-email" placeholder="Email address" required/>
+            <label class="file-input">
+              <span>📎 Choose PDF</span>
+              <input type="file" id="resume-file" accept=".pdf" required/>
+            </label>
+            <button type="submit" class="btn btn-primary" id="btn-upload-resume">
+              Upload &amp; Match
+            </button>
+          </form>
+          <div id="resume-result" class="resume-result"></div>
+        </div>
       </div>
+    </section>
 
-      <!-- Cluster bar -->
-      <div class="card">
-        <div class="card-header"><h2>🧩 Cluster Sizes</h2></div>
-        <div class="card-body"><div class="chart-box"><canvas id="chart-clusters"></canvas></div></div>
+    <!-- Charts -->
+    <section id="analytics">
+      <p class="section-title">Analytics</p>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-wrap">
+              <span class="card-title-icon ti-purple">◐</span>
+              <h2>Opportunity Distribution</h2>
+            </div>
+          </div>
+          <div class="card-body"><div class="chart-box"><canvas id="chart-distribution"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-wrap">
+              <span class="card-title-icon ti-teal">⬡</span>
+              <h2>Cluster Sizes</h2>
+            </div>
+          </div>
+          <div class="card-body"><div class="chart-box"><canvas id="chart-clusters"></canvas></div></div>
+        </div>
       </div>
-    </div>
+    </section>
 
     <!-- Opportunities table -->
-    <div class="card" style="margin-bottom:1.5rem">
-      <div class="card-header">
-        <h2>📋 Opportunities</h2>
-        <span class="badge badge-blue" id="opp-count-badge">0</span>
-      </div>
-      <div class="filters-bar">
-        <span class="filter-label">Type</span>
-        <select id="filter-type">
-          <option value="">All</option>
-          <option value="internship">Internship</option>
-          <option value="scholarship">Scholarship</option>
-          <option value="fellowship">Fellowship</option>
-          <option value="course">Course</option>
-          <option value="research_project">Research Project</option>
-          <option value="postdoc">Postdoc</option>
-        </select>
-        <span class="filter-label">Location</span>
-        <input type="text" id="filter-location" placeholder="e.g. France"/>
-        <button class="btn btn-ghost btn-sm" id="btn-filter">Filter</button>
-        <button class="btn btn-ghost btn-sm" id="btn-reset-filter">Reset</button>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Title</th><th>Type</th>
-              <th>Location</th><th>Deadline</th><th>Cluster</th><th>Link</th>
-            </tr>
-          </thead>
-          <tbody id="opp-tbody">
-            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⏳</div>Loading…</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-footer">
-        <span id="opp-showing">Showing 0 opportunities</span>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" id="btn-prev">← Prev</button>
-          <button class="btn btn-ghost btn-sm" id="btn-next">Next →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recommendations + Notifications -->
-    <div class="two-col">
-
-      <!-- Recommendations -->
-      <div class="card">
-        <div class="card-header"><h2>🎯 Recommendations</h2></div>
-        <div class="user-tabs" id="user-tabs">
-          <span class="filter-label" style="padding-top:4px">Select user:</span>
-        </div>
-        <div class="card-body">
-          <div class="rec-list" id="rec-list">
-            <div class="empty-state"><div class="empty-icon">👤</div>Select a user to view recommendations.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notifications -->
+    <section id="opportunities">
+      <p class="section-title">Opportunities</p>
       <div class="card">
         <div class="card-header">
-          <h2>🔔 Notifications</h2>
-          <select id="notif-user-select" style="min-width:120px;font-size:0.78rem">
-            <option value="">Select user</option>
+          <div class="card-title-wrap">
+            <span class="card-title-icon ti-blue">◇</span>
+            <h2>All Opportunities</h2>
+            <span class="badge badge-blue" id="opp-count-badge">0</span>
+          </div>
+        </div>
+        <div class="filters-bar">
+          <span class="filter-label">Type</span>
+          <select id="filter-type">
+            <option value="">All</option>
+            <option value="internship">Internship</option>
+            <option value="scholarship">Scholarship</option>
+            <option value="fellowship">Fellowship</option>
+            <option value="course">Course</option>
+            <option value="research_project">Research Project</option>
+            <option value="postdoc">Postdoc</option>
           </select>
+          <span class="filter-label">Location</span>
+          <input type="text" id="filter-location" placeholder="e.g. France"/>
+          <button class="btn btn-ghost btn-sm" id="btn-filter">Apply</button>
+          <button class="btn btn-ghost btn-sm" id="btn-reset-filter">Reset</button>
         </div>
-        <div class="card-body">
-          <div class="notif-list" id="notif-list">
-            <div class="empty-state"><div class="empty-icon">🔔</div>Select a user to view alerts.</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Title</th><th>Type</th>
+                <th>Location</th><th>Deadline</th><th>Cluster</th><th>Link</th>
+              </tr>
+            </thead>
+            <tbody id="opp-tbody">
+              <tr><td colspan="7"><div class="skeleton-rows"><div></div><div></div><div></div><div></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="opp-showing">Showing 0 opportunities</span>
+          <div class="pager">
+            <button class="btn btn-ghost btn-sm" id="btn-prev">← Prev</button>
+            <button class="btn btn-ghost btn-sm" id="btn-next">Next →</button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Clusters detail -->
-    <div class="card" style="margin-bottom:1.5rem">
-      <div class="card-header"><h2>🧩 Cluster Explorer</h2></div>
-      <div style="display:grid;grid-template-columns:280px 1fr;min-height:280px">
-        <div style="border-right:1px solid var(--border);padding:1rem">
-          <div class="cluster-list" id="cluster-list"></div>
+    <!-- Recommendations + Notifications -->
+    <section id="recommendations">
+      <p class="section-title">Personalization</p>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-wrap">
+              <span class="card-title-icon ti-green">★</span>
+              <h2>Recommendations</h2>
+            </div>
+          </div>
+          <div class="user-tabs" id="user-tabs">
+            <span class="filter-label">Select user</span>
+          </div>
+          <div class="card-body">
+            <div class="rec-list" id="rec-list">
+              <div class="empty-state"><div class="empty-icon">◉</div>Select a user to view recommendations.</div>
+            </div>
+          </div>
         </div>
-        <div style="padding:1.5rem">
-          <div id="cluster-detail">
-            <div class="empty-state"><div class="empty-icon">🧩</div>Select a cluster to view opportunities.</div>
+        <div class="card" id="notifications">
+          <div class="card-header">
+            <div class="card-title-wrap">
+              <span class="card-title-icon ti-orange">◊</span>
+              <h2>Notifications</h2>
+            </div>
+            <select id="notif-user-select" class="input-compact">
+              <option value="">Select user</option>
+            </select>
+          </div>
+          <div class="card-body">
+            <div class="notif-list" id="notif-list">
+              <div class="empty-state"><div class="empty-icon">◊</div>Select a user to view alerts.</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Cluster explorer -->
+    <section id="clusters">
+      <p class="section-title">Cluster Explorer</p>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title-wrap">
+            <span class="card-title-icon ti-teal">⬡</span>
+            <h2>Browse clusters</h2>
+          </div>
+          <span class="muted">Click a cluster to see its members</span>
+        </div>
+        <div class="cluster-explorer">
+          <div class="cluster-side">
+            <div class="cluster-list" id="cluster-list"></div>
+          </div>
+          <div class="cluster-main">
+            <div id="cluster-detail">
+              <div class="empty-state"><div class="empty-icon">⬡</div>Select a cluster to view opportunities.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="foot-left">
+        University Observatory · Multi-Agent System
+      </div>
+      <div class="foot-right">
+        Built with Mesa · Flask · scikit-learn · Chart.js
+      </div>
+    </footer>
 
   </main>
-
-  <footer class="footer">
-    University Observatory MAS — Multi-Agent System for Academic Opportunity Management
-    &nbsp;|&nbsp; Built with Flask + scikit-learn + Chart.js
-  </footer>
 </div>
 
 <div id="toast"></div>
 
 <script src="/static/js/dashboard.js"></script>
+<script>
+/* === UI enhancements: scroll-spy, theme toggle, counter animation, search === */
+(function(){
+  // Theme toggle (persists)
+  const root = document.documentElement;
+  const saved = localStorage.getItem('uo-theme');
+  if (saved) root.setAttribute('data-theme', saved);
+  const updateThemeLabel = () => {
+    const isDark = root.getAttribute('data-theme') !== 'light';
+    document.getElementById('theme-icon').textContent  = isDark ? '☾' : '☀';
+    document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+  };
+  updateThemeLabel();
+  document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('uo-theme', next);
+    updateThemeLabel();
+  });
+
+  // Scroll-spy for sidebar
+  const navLinks = document.querySelectorAll('.nav-link[data-target]');
+  const sections = Array.from(navLinks).map(l => document.getElementById(l.dataset.target)).filter(Boolean);
+  const setActive = id => {
+    navLinks.forEach(l => l.classList.toggle('active', l.dataset.target === id));
+  };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+
+  // Animated counters – watches innerText changes on [data-counter]
+  const animateNumber = (el, to) => {
+    const from = 0;
+    const dur = 800;
+    const t0 = performance.now();
+    const tick = (t) => {
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(from + (to - from) * eased).toLocaleString();
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  const counters = document.querySelectorAll('[data-counter]');
+  const mo = new MutationObserver(muts => {
+    muts.forEach(m => {
+      const el = m.target;
+      const txt = (el.textContent || '').trim();
+      const n = parseInt(txt.replace(/[^\d]/g, ''), 10);
+      if (!isNaN(n) && el.dataset.shown !== String(n)) {
+        el.dataset.shown = String(n);
+        animateNumber(el, n);
+      }
+    });
+  });
+  counters.forEach(c => mo.observe(c, { childList: true, characterData: true, subtree: true }));
+
+  // Cmd/Ctrl+K focuses search
+  const search = document.getElementById('global-search');
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault(); search.focus();
+    }
+  });
+
+  // Live filter the opportunities table from the global search
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    const rows = document.querySelectorAll('#opp-tbody tr');
+    rows.forEach(r => {
+      const txt = r.innerText.toLowerCase();
+      r.style.display = !q || txt.includes(q) ? '' : 'none';
+    });
+  });
+})();
+</script>
 </body>
 </html>
