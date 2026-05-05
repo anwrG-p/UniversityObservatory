@@ -68,6 +68,21 @@ def create_app(db: DatabaseManager = None) -> Flask:
         from agents.coordinator import CoordinatorAgent
         coordinator = CoordinatorAgent(current_app.config["DB"])
         result = coordinator.execute(skip_scraping=False)
+        
+        # Diagnostic logging for Render console
+        print("\n" + "="*40)
+        print("PIPELINE DIAGNOSTIC REPORT")
+        print("="*40)
+        for step, res in result.get("steps", {}).items():
+            if isinstance(res, dict):
+                status = res.get("status", "unknown")
+                inserted = res.get("inserted", 0)
+                source = res.get("source", "N/A")
+                print(f"Agent: {step:25} | Status: {status:15} | New: {inserted:3} | Source: {source}")
+            else:
+                print(f"Agent: {step:25} | Result: {res}")
+        print("="*40 + "\n")
+        
         return jsonify(result)
 
     # Stats route
