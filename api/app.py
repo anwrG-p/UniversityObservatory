@@ -23,15 +23,18 @@ from api.routes.notifications  import notifications_bp
 logger = logging.getLogger(__name__)
 
 
-def create_app(db: DatabaseManager) -> Flask:
+def create_app(db: DatabaseManager = None) -> Flask:
     """
     Application factory – creates and configures the Flask app.
 
     Parameters
     ----------
-    db : DatabaseManager
+    db : DatabaseManager, optional
         Shared database instance injected into all blueprints.
     """
+    if db is None:
+        db = DatabaseManager()
+        
     import config
 
     app = Flask(
