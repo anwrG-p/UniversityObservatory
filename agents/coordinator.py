@@ -81,17 +81,23 @@ class CoordinatorAgent(BaseAgent):
         """
         report: Dict[str, Any] = {"status": "ok", "agent": self.name, "steps": {}}
 
-        # ── Heartbeat Check ──────────────────────────────────────────
         import requests
+        import time
         print("\n" + "-"*40)
         print("NETWORK HEARTBEAT")
         try:
             r = requests.get("https://export.arxiv.org/api/query?max_results=1", timeout=5)
-            print(f"  ArXiv API Connection: SUCCESS (Status {r.status_code})")
-            print(f"  ArXiv Content Sample: {r.text[:50].strip()}...")
+            print(f"  ArXiv API Connection: {'SUCCESS' if r.status_code == 200 else 'RATE_LIMITED'} (Status {r.status_code})")
+            if r.status_code == 429:
+                print("  ! Warning: ArXiv is rate-limiting this IP. Adding extra delay.")
         except Exception as e:
             print(f"  ArXiv API Connection: FAILED -> {e}")
         print("-"*40 + "\n")
+
+        force_insert = kwargs.get("force_insert", False)
+        if force_insert:
+            logger.info("!!! FORCE_INSERT ENABLED: Skipping deduplication check !!!")
+
 
         # ── Step 1-3 : Scraping ──────────────────────────────────────
         if not skip_scraping:
@@ -101,8 +107,9 @@ class CoordinatorAgent(BaseAgent):
                 self.scholarship_scraper,
                 self.certification_scraper,
             ):
-                result = agent.execute()
+                result = agent.execute(force_insert=force_insert)
                 report["steps"][agent.name] = result
+                time.sleep(3)  # Be polite to APIs
         else:
             logger.info("Skipping scraping (skip_scraping=True)")
             report["steps"]["scraping"] = "skipped"

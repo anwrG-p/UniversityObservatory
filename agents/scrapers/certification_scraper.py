@@ -181,20 +181,20 @@ class CertificationScraperAgent(BaseAgent):
     # BaseAgent implementation
     # ------------------------------------------------------------------
 
-    def run(self, **kwargs) -> Dict[str, Any]:
+    def run(self, force_insert: bool = False, **kwargs) -> Dict[str, Any]:
         import config
         if config.USE_REAL_DATA:
-            return self._run_real()
+            return self._run_real(force_insert=force_insert)
         return self._run_mock()
 
     # ------------------------------------------------------------------
     # Real-data path
     # ------------------------------------------------------------------
 
-    def _run_real(self) -> Dict[str, Any]:
+    def _run_real(self, force_insert: bool = False) -> Dict[str, Any]:
         from data_collection.api_agent import ArXivAPIAgent
 
-        api_result = ArXivAPIAgent(self.db).execute()
+        api_result = ArXivAPIAgent(self.db).execute(force_insert=force_insert)
         total      = api_result.get("inserted", 0)
 
         if total == 0:

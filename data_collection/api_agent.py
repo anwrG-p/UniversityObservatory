@@ -41,20 +41,26 @@ logger = logging.getLogger(__name__)
 class _DeduplicateMixin:
     """Mixin that provides URL-based deduplication on insert."""
 
-    def _insert_deduped(self, records: List[Dict]) -> int:
-        existing_urls = {
-            row["url"]
-            for row in self.db.execute(
-                "SELECT url FROM opportunities WHERE url IS NOT NULL"
-            )
-        }
+    def _insert_deduped(self, records: List[Dict], force_insert: bool = False) -> int:
+        existing_urls = set()
+        if not force_insert:
+            existing_urls = {
+                row["url"]
+                for row in self.db.execute(
+                    "SELECT url FROM opportunities WHERE url IS NOT NULL"
+                )
+            }
+        
         inserted = 0
         seen_titles: set = set()
         for rec in records:
             url   = rec.get("url", "")
             title = rec.get("title", "").lower().strip()
-            if url in existing_urls or title in seen_titles:
-                continue
+            
+            if not force_insert:
+                if url in existing_urls or title in seen_titles:
+                    continue
+            
             seen_titles.add(title)
             if url:
                 existing_urls.add(url)
@@ -97,7 +103,7 @@ class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
     # BaseAgent contract
     # ------------------------------------------------------------------
 
-    def run(self, **kwargs) -> Dict[str, Any]:
+    def run(self, force_insert: bool = False, **kwargs) -> Dict[str, Any]:
         all_records: List[Dict] = []
 
         for category in self._CATEGORIES:
@@ -112,7 +118,7 @@ class RemotiveAPIAgent(_DeduplicateMixin, BaseAgent):
                 "inserted": 0,
             }
 
-        inserted = self._insert_deduped(all_records)
+        inserted = self._insert_deduped(all_records, force_insert=force_insert)
         self.logger.info("Remotive: inserted %d/%d records.", inserted, len(all_records))
         return {
             "status":     "ok",
@@ -197,7 +203,7 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
     # BaseAgent contract
     # ------------------------------------------------------------------
 
-    def run(self, **kwargs) -> Dict[str, Any]:
+    def run(self, force_insert: bool = False, **kwargs) -> Dict[str, Any]:
         papers = self._fetch_papers()
 
         if not papers:
@@ -207,7 +213,7 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
                 "inserted": 0,
             }
 
-        inserted = self._insert_deduped(papers)
+        inserted = self._insert_deduped(papers, force_insert=force_insert)
         self.logger.info("ArXiv: fetched %d, inserted %d new.", len(papers), inserted)
         return {
             "status":   "ok",

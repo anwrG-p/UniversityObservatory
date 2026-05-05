@@ -13,7 +13,6 @@ Usage
 import logging
 from flask import Flask
 from flask_cors import CORS
-
 from database.db_manager import DatabaseManager
 from api.routes.opportunities  import opportunities_bp
 from api.routes.users          import users_bp
@@ -64,10 +63,12 @@ def create_app(db: DatabaseManager = None) -> Flask:
     # Pipeline trigger route
     @app.route("/api/run-pipeline", methods=["POST"])
     def run_pipeline():
-        from flask import jsonify, current_app
+        from flask import jsonify, request, current_app
+        force = request.json.get("force", False) if request.is_json else False
+        
         from agents.coordinator import CoordinatorAgent
         coordinator = CoordinatorAgent(current_app.config["DB"])
-        result = coordinator.execute(skip_scraping=False)
+        result = coordinator.execute(skip_scraping=False, force_insert=force)
         
         # Diagnostic logging for Render console
         print("\n" + "="*40)
