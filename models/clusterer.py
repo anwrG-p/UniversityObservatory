@@ -127,20 +127,31 @@ class OpportunityClusterer:
 
     @staticmethod
     def _name_from_terms(idx: int, terms: List[str]) -> str:
-        """Heuristic: map dominant term to a cluster name."""
+        """Heuristic: map dominant term to a cluster name via scoring."""
         joined = " ".join(terms).lower()
-        if any(w in joined for w in ["scholarship", "fellowship", "grant", "funding", "stipend"]):
-            return "Scholarships & Funding"
-        if any(w in joined for w in ["nlp", "language", "text", "bert", "transformers", "nlp"]):
-            return "NLP & Language Models"
-        if any(w in joined for w in ["vision", "image", "robotic", "autonomous", "lidar"]):
-            return "Computer Vision & Robotics"
-        if any(w in joined for w in ["data", "analytics", "sql", "pandas", "visualization"]):
-            return "Data Science & Analytics"
-        if any(w in joined for w in ["deep", "neural", "pytorch", "tensorflow", "learning"]):
-            return "Deep Learning & ML"
-        if any(w in joined for w in ["course", "mooc", "certification", "edx", "coursera"]):
-            return "Courses & Certifications"
+        
+        rules = {
+            "Scholarships & Funding": ["scholarship", "fellowship", "grant", "funding", "stipend", "bursary"],
+            "NLP & LLMs":             ["nlp", "language", "text", "bert", "transformers", "gpt", "llm", "semantic", "parsing"],
+            "Computer Vision & AI":   ["vision", "image", "robotic", "autonomous", "lidar", "perception", "3d", "detection"],
+            "Data Science & BI":      ["data", "analytics", "sql", "pandas", "visualization", "bi", "tableau", "statistics"],
+            "Deep Learning & ML":     ["deep learning", "machine learning", "neural", "pytorch", "tensorflow", "cnn", "rnn", "gradient"],
+            "Courses & MOOCs":        ["course", "mooc", "certification", "edx", "coursera", "udemy", "workshop", "tutorial"],
+            "Research & Academia":    ["research", "paper", "arxiv", "conference", "abstract", "publication", "lab", "scientific"]
+        }
+        
+        scores = {cat: 0 for cat in rules}
+        for cat, keywords in rules.items():
+            for kw in keywords:
+                if kw in joined:
+                    # Specific/phrase matches get more points
+                    scores[cat] += 2 if " " in kw else 1
+        
+        # Get category with highest score
+        best_cat = max(scores, key=scores.get)
+        if scores[best_cat] > 0:
+            return best_cat
+            
         return _CLUSTER_NAME_FALLBACK.get(idx, f"Cluster {idx + 1}")
 
     def _store_pca(self, X, labels: np.ndarray) -> None:
