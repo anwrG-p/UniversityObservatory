@@ -334,7 +334,32 @@ class MarkdownParser:
         return m.group(1) if m else url
 
 
-# ═════════════════════════════════════════════════════════════════════════�    def run(self, force_insert: bool = False, **kwargs) -> Dict[str, Any]:
+# ═══════════════════════════════════════════════════════════════════════════
+# Base Firecrawl scraper agent
+# ═══════════════════════════════════════════════════════════════════════════
+
+class FirecrawlScraperBase(BaseAgent):
+    """
+    Abstract base for Firecrawl-powered scraper agents.
+
+    Subclasses set:
+    - ``_TARGET_URLS``  : list of pages to scrape
+    - ``_OPPORTUNITY_TYPE`` : DB type string
+    """
+
+    _TARGET_URLS: List[str]       = []
+    _OPPORTUNITY_TYPE: str        = "internship"
+
+    def __init__(self, name: str, db: DatabaseManager):
+        super().__init__(name, db)
+        self._client = FirecrawlClient()
+        self._parser = MarkdownParser()
+
+    # ------------------------------------------------------------------
+    # BaseAgent contract
+    # ------------------------------------------------------------------
+
+    def run(self, **kwargs) -> Dict[str, Any]:
         if not self._client.is_available():
             self.logger.warning(
                 "Firecrawl not available at %s — returning empty result. "
@@ -345,7 +370,6 @@ class MarkdownParser:
                 "status": "firecrawl_unavailable",
                 "agent":  self.name,
                 "inserted": 0,
-                "candidates": 0,
             }
 
         self.logger.info("Scraping %d URLs via Firecrawl…", len(self._TARGET_URLS))
@@ -363,7 +387,7 @@ class MarkdownParser:
                 self.logger.info("  %s → %d candidates extracted", url, len(records))
             all_records.extend(records)
 
-        inserted = self._insert_deduped(all_records, force_insert=force_insert)
+        inserted = self._insert_deduped(all_records)
         return {
             "status":       "ok",
             "agent":        self.name,
@@ -377,33 +401,8 @@ class MarkdownParser:
     # Deduplication helper
     # ------------------------------------------------------------------
 
-    def _insert_deduped(self, records: List[Dict], force_insert: bool = False) -> int:
+    def _insert_deduped(self, records: List[Dict]) -> int:
         """Insert records, skipping those whose URL already exists in DB."""
-        existing_urls = set()
-        if not force_insert:
-            existing_urls = {
-                row["url"]
-                for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")
-            }
-        inserted = 0
-        seen: set = set()
-        for rec in records:
-            url = rec.get("url", "")
-            title_key = rec.get("title", "").lower().strip()
-            if not force_insert and (url in existing_urls or title_key in seen):
-                continue
-            seen.add(title_key)
-            if url:
-                existing_urls.add(url)
-            self.db.insert_opportunity(rec)
-            inserted += 1
-
-        if len(records) > 0 and inserted == 0:
-            logger.info("All %d candidates were already in the database (deduplicated).", len(records))
-        elif inserted > 0:
-            logger.info("Successfully inserted %d new records (%d were duplicates).", inserted, len(records) - inserted)
-
-        return insertedeady exists in DB."""
         existing_urls = {
             row["url"]
             for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")
