@@ -77,8 +77,9 @@ def create_app(db: DatabaseManager = None) -> Flask:
             if isinstance(res, dict):
                 status = res.get("status", "unknown")
                 inserted = res.get("inserted", 0)
+                fetched = res.get("fetched", res.get("candidates", 0))
                 source = res.get("source", "N/A")
-                print(f"Agent: {step:25} | Status: {status:15} | New: {inserted:3} | Source: {source}")
+                print(f"Agent: {step:25} | Status: {status:10} | Found: {fetched:3} | New: {inserted:3} | Source: {source}")
             else:
                 print(f"Agent: {step:25} | Result: {res}")
         print("="*40 + "\n")

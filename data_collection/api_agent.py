@@ -208,7 +208,7 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
             }
 
         inserted = self._insert_deduped(papers)
-        self.logger.info("ArXiv: inserted %d/%d papers.", inserted, len(papers))
+        self.logger.info("ArXiv: fetched %d, inserted %d new.", len(papers), inserted)
         return {
             "status":   "ok",
             "agent":    self.name,
@@ -247,8 +247,11 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
             return []
 
         ns   = self._ATOM_NS
+        entries = root.findall(f"{ns}entry")
+        self.logger.info("ArXiv XML: found %d <entry> tags.", len(entries))
+        
         opps = []
-        for entry in root.findall(f"{ns}entry"):
+        for entry in entries:
             title_el   = entry.find(f"{ns}title")
             summary_el = entry.find(f"{ns}summary")
             id_el      = entry.find(f"{ns}id")
