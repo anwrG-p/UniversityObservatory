@@ -36,7 +36,8 @@ logger = logging.getLogger("main")
 
 def setup_dirs():
     """Create required directories."""
-    os.makedirs(os.path.dirname(config.DATABASE_PATH), exist_ok=True)
+    if not str(config.DATABASE_PATH).startswith(("postgres", "http")):
+        os.makedirs(os.path.dirname(config.DATABASE_PATH), exist_ok=True)
     os.makedirs(config.MODEL_DIR, exist_ok=True)
 
 
