@@ -6,7 +6,7 @@
 "use strict";
 
 // ── Constants ────────────────────────────────────────────
-const API   = "";          // same origin
+const API   = "https://universityobservatory.onrender.com"; // Render API Backend
 const COLORS = [
   "#63b3ed","#b794f4","#68d391","#f6ad55","#fc8181",
   "#4fd1c5","#f687b3","#a3e635","#fbbf24","#38bdf8"
