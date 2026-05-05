@@ -213,7 +213,7 @@ class MarkdownParser:
         r'san francisco|boston|cambridge|oxford)\b',
         re.IGNORECASE,
     )
-    _HEADING_RE  = re.compile(r'^#{1,3}\s+(.+)$', re.MULTILINE)
+    _HEADING_RE  = re.compile(r'^#{1,4}\s+(.+)$', re.MULTILINE)
     _MIN_DESC_LEN = 60   # discard blocks shorter than this
 
     @classmethod
@@ -236,9 +236,11 @@ class MarkdownParser:
 
         for title, body in blocks:
             if len(body) < cls._MIN_DESC_LEN:
+                logger.debug("  Skipping block '%s' (too short: %d chars)", title[:30], len(body))
                 continue
             norm_title = title.strip().lower()
             if not norm_title or norm_title in seen_titles:
+                logger.debug("  Skipping block '%s' (duplicate title in this page)", title[:30])
                 continue
             seen_titles.add(norm_title)
 
@@ -371,7 +373,10 @@ class FirecrawlScraperBase(BaseAgent):
                 self.logger.warning("No content from %s", url)
                 continue
             records = MarkdownParser.parse(markdown, url, self._OPPORTUNITY_TYPE)
-            self.logger.info("  %s → %d candidates", url, len(records))
+            if not records:
+                self.logger.info("  %s → 0 candidates found (check page structure)", url)
+            else:
+                self.logger.info("  %s → %d candidates extracted", url, len(records))
             all_records.extend(records)
 
         inserted = self._insert_deduped(all_records)
@@ -406,6 +411,12 @@ class FirecrawlScraperBase(BaseAgent):
                 existing_urls.add(url)
             self.db.insert_opportunity(rec)
             inserted += 1
+        
+        if len(records) > 0 and inserted == 0:
+            logger.info("All %d candidates were already in the database (deduplicated).", len(records))
+        elif inserted > 0:
+            logger.info("Successfully inserted %d new records (%d were duplicates).", inserted, len(records) - inserted)
+            
         return inserted
 
 

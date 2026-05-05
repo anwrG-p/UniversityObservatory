@@ -84,27 +84,15 @@ INTERNSHIP_SCRAPE_URLS = [
     "https://ai-jobs.net/",
     "https://www.euraxess.eu/jobs/search?freeTextKeyword=machine+learning",
     "https://jobs.lever.co/",
-    "https://boards.greenhouse.io/",
-    "https://internshala.com/internships/machine-learning-internship/",
-    "https://www.indeed.com/jobs?q=machine+learning+internship",
-    "https://wellfound.com/jobs",
 ]
 SCHOLARSHIP_SCRAPE_URLS = [
     "https://www.scholars4dev.com/category/scholarships-by-subject/science-technology/",
     "https://www.daad.de/en/studying-in-germany/scholarships/daad-scholarships/",
-    "https://www.scholarshipportal.com/",
-    "https://opportunitiescorners.com/category/scholarships/",
-    "https://www.mastersportal.com/scholarships/",
-    "https://www.internationalscholarships.com/",
-    "https://www.studyin-europe.eu/scholarships",
+    
 ]
 COURSE_SCRAPE_URLS = [
     "https://www.coursera.org/courses?query=machine%20learning",
     "https://www.edx.org/learn/machine-learning",
-    "https://www.udemy.com/topic/machine-learning/",
-    "https://www.datacamp.com/courses/online-machine-learning-courses",
-    "https://www.futurelearn.com/courses/search?q=machine%20learning",
-    "https://www.simplilearn.com/artificial-intelligence-and-machine-learning-bootcamp",
 ]
 
 # ---------------------------------------------------------------------------

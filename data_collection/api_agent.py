@@ -60,6 +60,12 @@ class _DeduplicateMixin:
                 existing_urls.add(url)
             self.db.insert_opportunity(rec)
             inserted += 1
+
+        if len(records) > 0 and inserted == 0:
+            logger.info("All %d candidates from this source were already in the database.", len(records))
+        elif inserted > 0:
+            logger.info("Inserted %d new records (%d were duplicates).", inserted, len(records) - inserted)
+
         return inserted
 
 

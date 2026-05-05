@@ -38,7 +38,7 @@ _CLUSTER_NAME_FALLBACK = {
 class OpportunityClusterer:
     """K-Means clustering for opportunity documents."""
 
-    def __init__(self, n_clusters: int = config.N_CLUSTERS):
+    def __init__(self, n_clusters: Optional[int] = None):
         self.n_clusters = n_clusters
         self._vectorizer: TfidfVectorizer = TfidfVectorizer(
             max_features=config.CLUSTERING_MAX_FEATURES,
@@ -47,7 +47,7 @@ class OpportunityClusterer:
             sublinear_tf=True,
         )
         self._model: KMeans = KMeans(
-            n_clusters=self.n_clusters,
+            n_clusters=self.n_clusters or config.N_CLUSTERS,
             random_state=config.CLUSTERING_RANDOM_STATE,
             n_init=10,
         )
@@ -74,13 +74,15 @@ class OpportunityClusterer:
         labels : np.ndarray, shape (n_docs,)
         cluster_meta : dict  {cluster_id (0-indexed): {"name": ..., "keywords": ...}}
         """
-        if len(texts) < self.n_clusters:
+        # Dynamic cluster count estimation if not explicitly forced
+        num_docs = len(texts)
+        if self.n_clusters is None: 
+            estimated_k = int(np.sqrt(num_docs / 2))
+            actual_k = max(2, min(12, estimated_k))
+            self._model.set_params(n_clusters=actual_k)
+        elif num_docs < self.n_clusters:
             # Reduce clusters to avoid empty-cluster errors
-            self._model = KMeans(
-                n_clusters=max(2, len(texts) // 2),
-                random_state=config.CLUSTERING_RANDOM_STATE,
-                n_init=10,
-            )
+            self._model.set_params(n_clusters=max(2, num_docs // 2))
 
         X = self._vectorizer.fit_transform(texts)
         labels = self._model.fit_predict(X)
@@ -137,7 +139,10 @@ class OpportunityClusterer:
             "Data Science & BI":      ["data", "analytics", "sql", "pandas", "visualization", "bi", "tableau", "statistics"],
             "Deep Learning & ML":     ["deep learning", "machine learning", "neural", "pytorch", "tensorflow", "cnn", "rnn", "gradient"],
             "Courses & MOOCs":        ["course", "mooc", "certification", "edx", "coursera", "udemy", "workshop", "tutorial"],
-            "Research & Academia":    ["research", "paper", "arxiv", "conference", "abstract", "publication", "lab", "scientific"]
+            "Research & Academia":    ["research", "paper", "arxiv", "conference", "abstract", "publication", "lab", "scientific"],
+            "Robotics & Control":     ["robotic", "control", "autonomous", "drone", "actuator", "sensor", "path planning"],
+            "Cybersecurity & Net":    ["security", "cyber", "network", "cryptography", "encryption", "threat", "vulnerability"],
+            "Bio-Tech & Health":      ["bio", "medical", "health", "genome", "protein", "clinic", "healthcare", "pharma"]
         }
         
         scores = {cat: 0 for cat in rules}
@@ -151,6 +156,11 @@ class OpportunityClusterer:
         best_cat = max(scores, key=scores.get)
         if scores[best_cat] > 0:
             return best_cat
+            
+        # Final Fallback: Construct name from top 3 keywords
+        top_k = [t.capitalize() for t in terms[:3]]
+        if len(top_k) >= 2:
+            return " & ".join(top_k)
             
         return _CLUSTER_NAME_FALLBACK.get(idx, f"Cluster {idx + 1}")
 
