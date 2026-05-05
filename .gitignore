@@ -44,3 +44,5 @@ models/saved/*.pkl
 .DS_Store
 Thumbs.db
 report.tex
+
+ProjectDescription/

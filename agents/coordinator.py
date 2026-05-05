@@ -28,10 +28,13 @@ from agents.scrapers import (
     InternshipScraperAgent,
     ScholarshipScraperAgent,
     CertificationScraperAgent,
+    PostdocScraperAgent,
+    ProjectScraperAgent,
 )
 from agents.analysis import ClassificationAgent, ClusteringAgent
 from agents.recommendation import RelevanceMatcherAgent, AdvisorAgent
 from agents.notification import NotificationAgent
+from agents.mesa_model import MesaMASModel
 from database.db_manager import DatabaseManager
 
 logger = logging.getLogger("CoordinatorAgent")
@@ -54,6 +57,8 @@ class CoordinatorAgent(BaseAgent):
         self.internship_scraper    = InternshipScraperAgent(db)
         self.scholarship_scraper   = ScholarshipScraperAgent(db)
         self.certification_scraper = CertificationScraperAgent(db)
+        self.postdoc_scraper       = PostdocScraperAgent(db)
+        self.project_scraper       = ProjectScraperAgent(db)
 
         # Analysis agents
         self.classification_agent  = ClassificationAgent(db)
@@ -98,42 +103,44 @@ class CoordinatorAgent(BaseAgent):
             logger.info("!!! FORCE_INSERT ENABLED: Skipping deduplication check !!!")
 
 
-        # ââ Step 1-3 : Scraping ââââââââââââââââââââââââââââââââââââââ
-        if not skip_scraping:
-            logger.info("=== STEP 1-3: Scraping ===")
-            for agent in (
-                self.internship_scraper,
-                self.scholarship_scraper,
-                self.certification_scraper,
-            ):
-                result = agent.execute(force_insert=force_insert)
-                report["steps"][agent.name] = result
-                time.sleep(3)  # Be polite to APIs
-        else:
+        # Build the Mesa MAS model. Per project guidelines (Section 6 -
+        # Python Libraries and Tools), Mesa is the MAS framework: each
+        # BaseAgent is wrapped in a mesa.Agent and stepped via Mesa's
+        # BaseScheduler in strict pipeline order.
+        scrapers = [
+            self.internship_scraper,
+            self.project_scraper,
+            self.scholarship_scraper,
+            self.certification_scraper,
+            self.postdoc_scraper,
+        ]
+
+        if skip_scraping:
             logger.info("Skipping scraping (skip_scraping=True)")
             report["steps"]["scraping"] = "skipped"
+            pipeline_agents = [
+                self.classification_agent,
+                self.clustering_agent,
+                self.relevance_matcher,
+                self.advisor_agent,
+                self.notification_agent,
+            ]
+        else:
+            pipeline_agents = scrapers + [
+                self.classification_agent,
+                self.clustering_agent,
+                self.relevance_matcher,
+                self.advisor_agent,
+                self.notification_agent,
+            ]
 
-        # ââ Step 4 : Classification ââââââââââââââââââââââââââââââââââ
-        logger.info("=== STEP 4: Classification ===")
-        report["steps"]["ClassificationAgent"] = self.classification_agent.execute()
-
-        # ââ Step 5 : Clustering ââââââââââââââââââââââââââââââââââââââ
-        logger.info("=== STEP 5: Clustering ===")
-        report["steps"]["ClusteringAgent"] = self.clustering_agent.execute()
-
-        # ââ Step 6 : Relevance matching ââââââââââââââââââââââââââââââ
-        logger.info("=== STEP 6: Relevance Matching ===")
-        match_result = self.relevance_matcher.execute()
-        report["steps"]["RelevanceMatcherAgent"] = match_result
-
-        # ââ Step 7 : Advisor ranks & persists ââââââââââââââââââââââââ
-        logger.info("=== STEP 7: Advisor ===")
-        matches = match_result.get("data", [])
-        report["steps"]["AdvisorAgent"] = self.advisor_agent.execute(matches=matches)
-
-        # ââ Step 8 : Notifications âââââââââââââââââââââââââââââââââââ
-        logger.info("=== STEP 8: Notifications ===")
-        report["steps"]["NotificationAgent"] = self.notification_agent.execute()
+        logger.info("=== Running Mesa-orchestrated MAS pipeline ===")
+        mesa_model = MesaMASModel(
+            agents_in_order=pipeline_agents,
+            step_kwargs={"force_insert": force_insert},
+        )
+        mesa_report = mesa_model.run()
+        report["steps"].update(mesa_report["steps"])
 
         self._pipeline_report = report
         logger.info("Pipeline complete.")
