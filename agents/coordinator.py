@@ -19,9 +19,7 @@ Pipeline order
 """
 
 import logging
-import time
-import requests
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from agents.base_agent import BaseAgent
 from agents.scrapers import (
@@ -88,16 +86,6 @@ class CoordinatorAgent(BaseAgent):
         """
         report: Dict[str, Any] = {"status": "ok", "agent": self.name, "steps": {}}
 
-        print("\n" + "-"*40)
-        print("NETWORK HEARTBEAT")
-        try:
-            r = requests.get("https://export.arxiv.org/api/query?search_query=cat:cs.AI&max_results=1", timeout=5)
-            status_label = {200: "SUCCESS", 429: "RATE_LIMITED (wait ~10min)", 400: "BAD_REQUEST (query format error)"}.get(r.status_code, f"ERROR_{r.status_code}")
-            print(f"  ArXiv API Connection: {status_label} (Status {r.status_code})")
-        except Exception as e:
-            print(f"  ArXiv API Connection: FAILED -> {e}")
-        print("-"*40 + "\n")
-
         force_insert = kwargs.get("force_insert", False)
         if force_insert:
             logger.info("!!! FORCE_INSERT ENABLED: Skipping deduplication check !!!")
@@ -146,28 +134,3 @@ class CoordinatorAgent(BaseAgent):
         logger.info("Pipeline complete.")
         return report
 
-    # ------------------------------------------------------------------
-    # Scheduler integration (APScheduler)
-    # ------------------------------------------------------------------
-
-    def start_scheduler(self, interval_minutes: int = 60) -> None:
-        """Start APScheduler to run the pipeline on a fixed interval."""
-        try:
-            from apscheduler.schedulers.background import BackgroundScheduler
-            scheduler = BackgroundScheduler()
-            scheduler.add_job(
-                func=self.execute,
-                trigger="interval",
-                minutes=interval_minutes,
-                id="mas_pipeline",
-                replace_existing=True,
-            )
-            scheduler.start()
-            logger.info(
-                "Scheduler started - pipeline runs every %d minutes.", interval_minutes
-            )
-        except ImportError:
-            logger.error("APScheduler not installed. Run: pip install apscheduler")
-
-    def get_pipeline_report(self) -> Dict[str, Any]:
-        return self._pipeline_report
