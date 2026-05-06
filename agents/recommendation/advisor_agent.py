@@ -9,7 +9,7 @@ final list, and persists the top-K recommendations to the database.
 """
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import config
@@ -100,7 +100,7 @@ class AdvisorAgent(BaseAgent):
             return 0.5
         try:
             deadline = datetime.strptime(deadline_str, "%Y-%m-%d")
-            days_left = (deadline - datetime.utcnow()).days
+            days_left = (deadline.replace(tzinfo=timezone.utc) - datetime.now(timezone.utc)).days
             if days_left < 0:
                 return 0.0
             if days_left <= 30:
