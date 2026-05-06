@@ -215,9 +215,10 @@ class InternshipScraperAgent(BaseAgent):
         records  = random.sample(_INTERNSHIP_POOL, random.randint(6, len(_INTERNSHIP_POOL)))
         existing_urls = {row["url"] for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")}
         inserted = 0
-        for rec in records:
-            if rec.get("url", "") in existing_urls:
+        for src in records:
+            if src.get("url", "") in existing_urls:
                 continue
+            rec = dict(src)
             rec["type"]     = "internship"
             rec["deadline"] = (datetime.utcnow() + timedelta(days=random.randint(30, 180))).strftime("%Y-%m-%d")
             rec["category"] = "internship"

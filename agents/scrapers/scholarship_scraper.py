@@ -217,9 +217,10 @@ class ScholarshipScraperAgent(BaseAgent):
         records  = random.sample(_SCHOLARSHIP_POOL, random.randint(5, len(_SCHOLARSHIP_POOL)))
         existing_urls = {row["url"] for row in self.db.execute("SELECT url FROM opportunities WHERE url IS NOT NULL")}
         inserted = 0
-        for rec in records:
-            if rec.get("url", "") in existing_urls:
+        for src in records:
+            if src.get("url", "") in existing_urls:
                 continue
+            rec = dict(src)
             rec.setdefault("type", "scholarship")
             rec["deadline"] = (datetime.utcnow() + timedelta(days=random.randint(45, 240))).strftime("%Y-%m-%d")
             rec["category"] = rec["type"]
