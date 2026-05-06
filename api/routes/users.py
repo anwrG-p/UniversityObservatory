@@ -53,7 +53,7 @@ def upload_resume():
     name = request.form.get("name", "Anonymous")
     email = request.form.get("email", "anonymous@example.com")
     
-    if not file.filename.lower().endswith(".pdf"):
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
         return jsonify({"error": "Only PDF resumes are supported"}), 400
         
     try:
@@ -61,7 +61,7 @@ def upload_resume():
         reader = pypdf.PdfReader(file)
         text = ""
         for page in reader.pages:
-            text += page.extract_text() + " "
+            text += (page.extract_text() or "") + " "
     except Exception as e:
         return jsonify({"error": f"Failed to parse PDF: {str(e)}"}), 500
         
