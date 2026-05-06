@@ -97,7 +97,8 @@ def create_app(db: DatabaseManager = None) -> Flask:
     # Health check route
     @app.route("/api/health", methods=["GET"])
     def health():
-        return {"status": "ok"}, 200
+        from flask import jsonify
+        return jsonify({"status": "ok"})
 
     logger.info("Flask application created.")
     return app
