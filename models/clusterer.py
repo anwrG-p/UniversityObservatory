@@ -13,7 +13,7 @@ Outputs
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from sklearn.cluster import KMeans
@@ -38,7 +38,7 @@ _CLUSTER_NAME_FALLBACK = {
 class OpportunityClusterer:
     """K-Means clustering for opportunity documents."""
 
-    def __init__(self, n_clusters: Optional[int] = None):
+    def __init__(self, n_clusters: int | None = None):
         self.n_clusters = n_clusters
         self._vectorizer: TfidfVectorizer = TfidfVectorizer(
             max_features=config.CLUSTERING_MAX_FEATURES,
@@ -135,7 +135,7 @@ class OpportunityClusterer:
         rules = {
             "Scholarships & Funding": ["scholarship", "fellowship", "grant", "funding", "stipend", "bursary"],
             "NLP & LLMs":             ["nlp", "language", "text", "bert", "transformers", "gpt", "llm", "semantic", "parsing"],
-            "Computer Vision & AI":   ["vision", "image", "robotic", "autonomous", "lidar", "perception", "3d", "detection"],
+            "Computer Vision & AI":   ["vision", "image", "lidar", "perception", "3d", "detection"],
             "Data Science & BI":      ["data", "analytics", "sql", "pandas", "visualization", "bi", "tableau", "statistics"],
             "Deep Learning & ML":     ["deep learning", "machine learning", "neural", "pytorch", "tensorflow", "cnn", "rnn", "gradient"],
             "Courses & MOOCs":        ["course", "mooc", "certification", "edx", "coursera", "udemy", "workshop", "tutorial"],
