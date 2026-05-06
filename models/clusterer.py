@@ -59,7 +59,7 @@ class OpportunityClusterer:
     # ------------------------------------------------------------------
 
     def fit_predict(
-        self, texts: List[str], ids: List[int] = None
+        self, texts: List[str], ids: List[int] | None = None
     ) -> Tuple[np.ndarray, Dict[int, Dict]]:
         """
         Vectorise texts, cluster them, and return labels + cluster metadata.

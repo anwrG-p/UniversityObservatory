@@ -9,6 +9,10 @@ GET  /api/clusters               - list all clusters
 GET  /api/clusters/<id>/opportunities - opportunities in cluster
 """
 
+import json
+import os
+
+import config
 from flask import Blueprint, jsonify, request, current_app
 
 opportunities_bp = Blueprint("opportunities", __name__)
@@ -48,17 +52,8 @@ def list_clusters():
     return jsonify({"clusters": clusters})
 
 
-@opportunities_bp.route("/clusters/<int:cluster_id>/opportunities", methods=["GET"])
-def cluster_opportunities(cluster_id: int):
-    opps = _db().get_opportunities(cluster_id=cluster_id)
-    return jsonify({"cluster_id": cluster_id, "opportunities": opps})
-
-
 @opportunities_bp.route("/clusters/pca", methods=["GET"])
 def pca_coords():
-    import json
-    import os
-    import config
     pca_path = os.path.join(config.MODEL_DIR, "pca_coords.json")
     if not os.path.exists(pca_path):
         return jsonify({"coords": [], "message": "Pipeline has not run yet"})
@@ -68,3 +63,9 @@ def pca_coords():
         return jsonify({"coords": coords})
     except Exception as exc:
         return jsonify({"coords": [], "message": f"Error reading PCA data: {exc}"}), 500
+
+
+@opportunities_bp.route("/clusters/<int:cluster_id>/opportunities", methods=["GET"])
+def cluster_opportunities(cluster_id: int):
+    opps = _db().get_opportunities(cluster_id=cluster_id)
+    return jsonify({"cluster_id": cluster_id, "opportunities": opps})

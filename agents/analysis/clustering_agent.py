@@ -11,6 +11,8 @@ A PCA-reduced 2-D representation is also stored for the dashboard scatter
 plot.
 """
 
+import json
+import os
 from typing import Any, Dict
 
 import config
@@ -50,14 +52,13 @@ class ClusteringAgent(BaseAgent):
             self.db.update_opportunity_cluster(opp_id, int(label) + 1)  # 1-indexed in DB
 
         # Persist PCA coords for the scatter plot endpoint
-        import json
-        import os
         pca_path = os.path.join(config.MODEL_DIR, "pca_coords.json")
         try:
+            os.makedirs(os.path.dirname(pca_path), exist_ok=True)
             with open(pca_path, "w", encoding="utf-8") as f:
                 json.dump(self._clusterer.get_pca_coords(), f)
         except Exception as exc:
-            self.logger.warning("Could not write pca_coords.json: %s", exc)
+            self.logger.error("Could not write pca_coords.json: %s", exc)
 
         self.logger.info(
             "Clustered %d opportunities into %d clusters.",
