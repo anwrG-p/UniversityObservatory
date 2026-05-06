@@ -64,7 +64,8 @@ def create_app(db: DatabaseManager = None) -> Flask:
     @app.route("/api/run-pipeline", methods=["POST"])
     def run_pipeline():
         from flask import jsonify, request, current_app
-        force = request.json.get("force", False) if request.is_json else False
+        body = request.get_json(silent=True) or {}
+        force = bool(body.get("force", False))
         
         from agents.coordinator import CoordinatorAgent
         coordinator = CoordinatorAgent(current_app.config["DB"])
@@ -92,6 +93,11 @@ def create_app(db: DatabaseManager = None) -> Flask:
     def stats():
         from flask import jsonify, current_app
         return jsonify(current_app.config["DB"].get_stats())
+
+    # Health check route
+    @app.route("/api/health", methods=["GET"])
+    def health():
+        return {"status": "ok"}, 200
 
     logger.info("Flask application created.")
     return app
