@@ -8,7 +8,6 @@ Supports both SQLite and PostgreSQL (Supabase).
 import sqlite3
 import logging
 import os
-import re
 from typing import Any, Dict, List, Optional
 
 import config
