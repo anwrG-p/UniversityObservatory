@@ -8,8 +8,7 @@ Responsibilities
 1. Instantiate all sub-agents.
 2. Execute them in the correct dependency order.
 3. Pass outputs between dependent agents (e.g. matcher -> advisor).
-4. Support optional APScheduler-based periodic execution.
-5. Return a full pipeline report.
+4. Return a full pipeline report.
 
 Pipeline order
 --------------
