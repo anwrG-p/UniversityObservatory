@@ -13,6 +13,7 @@ plot.
 
 from typing import Any, Dict
 
+import config
 from agents.base_agent import BaseAgent
 from database.db_manager import DatabaseManager
 from models.clusterer import OpportunityClusterer
@@ -38,7 +39,7 @@ class ClusteringAgent(BaseAgent):
         ids   = [o["id"] for o in opportunities]
         texts = [f"{o['title']} {o['description']}" for o in opportunities]
 
-        labels, cluster_meta = self._clusterer.fit_predict(texts)
+        labels, cluster_meta = self._clusterer.fit_predict(texts, ids)
 
         # Persist cluster metadata
         for cid, meta in cluster_meta.items():
@@ -47,6 +48,16 @@ class ClusteringAgent(BaseAgent):
         # Assign cluster ids to opportunities
         for opp_id, label in zip(ids, labels):
             self.db.update_opportunity_cluster(opp_id, int(label) + 1)  # 1-indexed in DB
+
+        # Persist PCA coords for the scatter plot endpoint
+        import json
+        import os
+        pca_path = os.path.join(config.MODEL_DIR, "pca_coords.json")
+        try:
+            with open(pca_path, "w", encoding="utf-8") as f:
+                json.dump(self._clusterer.get_pca_coords(), f)
+        except Exception as exc:
+            self.logger.warning("Could not write pca_coords.json: %s", exc)
 
         self.logger.info(
             "Clustered %d opportunities into %d clusters.",

@@ -52,3 +52,19 @@ def list_clusters():
 def cluster_opportunities(cluster_id: int):
     opps = _db().get_opportunities(cluster_id=cluster_id)
     return jsonify({"cluster_id": cluster_id, "opportunities": opps})
+
+
+@opportunities_bp.route("/clusters/pca", methods=["GET"])
+def pca_coords():
+    import json
+    import os
+    import config
+    pca_path = os.path.join(config.MODEL_DIR, "pca_coords.json")
+    if not os.path.exists(pca_path):
+        return jsonify({"coords": [], "message": "Pipeline has not run yet"})
+    try:
+        with open(pca_path, encoding="utf-8") as f:
+            coords = json.load(f)
+        return jsonify({"coords": coords})
+    except Exception as exc:
+        return jsonify({"coords": [], "message": f"Error reading PCA data: {exc}"}), 500

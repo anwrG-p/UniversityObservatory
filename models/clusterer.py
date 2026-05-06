@@ -59,7 +59,7 @@ class OpportunityClusterer:
     # ------------------------------------------------------------------
 
     def fit_predict(
-        self, texts: List[str]
+        self, texts: List[str], ids: List[int] = None
     ) -> Tuple[np.ndarray, Dict[int, Dict]]:
         """
         Vectorise texts, cluster them, and return labels + cluster metadata.
@@ -88,7 +88,7 @@ class OpportunityClusterer:
         labels = self._model.fit_predict(X)
 
         cluster_meta = self._extract_cluster_meta()
-        self._store_pca(X, labels)
+        self._store_pca(X, labels, ids or [])
 
         logger.info(
             "K-Means: %d docs -> %d clusters", len(texts), self._model.n_clusters
@@ -164,14 +164,18 @@ class OpportunityClusterer:
             
         return _CLUSTER_NAME_FALLBACK.get(idx, f"Cluster {idx + 1}")
 
-    def _store_pca(self, X, labels: np.ndarray) -> None:
+    def _store_pca(self, X, labels: np.ndarray, ids: List[int]) -> None:
         """Reduce to 2-D and store alongside labels for scatter plot."""
         try:
             X_dense = X.toarray()
             coords2d = self._pca.fit_transform(X_dense)
             self.pca_coords = [
-                {"x": float(coords2d[i, 0]), "y": float(coords2d[i, 1]),
-                 "cluster": int(labels[i]) + 1}
+                {
+                    "x": float(coords2d[i, 0]),
+                    "y": float(coords2d[i, 1]),
+                    "cluster": int(labels[i]) + 1,
+                    "id": ids[i] if ids and i < len(ids) else None,
+                }
                 for i in range(len(labels))
             ]
         except Exception as exc:
