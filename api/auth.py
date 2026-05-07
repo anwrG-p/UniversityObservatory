@@ -2,10 +2,13 @@
 api/auth.py
 ===========
 JWT verification decorator for Flask routes.
-Validates Supabase-issued JWTs using the RS256 JWK public key.
+Fetches Supabase's RS256 public key from the JWKS endpoint at startup —
+no manual key management required.
 """
 
+import json
 import logging
+import requests as _requests
 import jwt
 from jwt.algorithms import RSAAlgorithm
 from functools import wraps
@@ -14,18 +17,26 @@ import config
 
 logger = logging.getLogger(__name__)
 
-# Convert JWK JSON → RSA public key object once at import time
-_public_key = None
-_jwk_raw = config.SUPABASE_JWT_PUBLIC_KEY
-if not _jwk_raw:
-    logger.error("SUPABASE_JWT_PUBLIC_KEY is empty or not set in environment")
-else:
-    logger.info("SUPABASE_JWT_PUBLIC_KEY found, length=%d, starts_with=%r", len(_jwk_raw), _jwk_raw[:20])
+
+def _load_public_key():
+    """Fetch the first RS256 key from Supabase's JWKS endpoint."""
+    url = f"{config.SUPABASE_URL}/auth/v1/.well-known/jwks.json"
     try:
-        _public_key = RSAAlgorithm.from_jwk(_jwk_raw)
-        logger.info("RSA public key parsed successfully")
+        resp = _requests.get(url, timeout=10)
+        resp.raise_for_status()
+        keys = resp.json().get("keys", [])
+        if not keys:
+            logger.error("JWKS endpoint returned no keys: %s", url)
+            return None
+        key = RSAAlgorithm.from_jwk(json.dumps(keys[0]))
+        logger.info("RS256 public key loaded from Supabase JWKS")
+        return key
     except Exception as e:
-        logger.error("Failed to parse SUPABASE_JWT_PUBLIC_KEY as JWK: %s | raw value starts: %r", e, _jwk_raw[:50])
+        logger.error("Failed to load JWKS from %s: %s", url, e)
+        return None
+
+
+_public_key = _load_public_key()
 
 
 def require_auth(f):
