@@ -457,10 +457,10 @@ async function handleResumeUpload(e) {
 
 // ── Refresh all ────────────────────────────────────────────
 async function refreshAll() {
-  await loadStats();
-  await loadOpportunities();
+  // stats, opportunities, and users are independent — fire them in parallel.
+  // clusters needs allOpportunities populated first, so it runs after.
+  await Promise.all([loadStats(), loadOpportunities(), loadUsers()]);
   await loadClusters();
-  await loadUsers();
 }
 
 // ── Init ──────────────────────────────────────────────────
@@ -479,11 +479,9 @@ async function init() {
   $("btn-prev").addEventListener("click", () => { currentPage--; renderTable(); });
   $("btn-next").addEventListener("click", () => { currentPage++; renderTable(); });
 
-  // Load initial data
-  await loadStats();
-  await loadOpportunities();
+  // Load initial data — parallel where possible
+  await Promise.all([loadStats(), loadOpportunities(), loadUsers()]);
   await loadClusters();
-  await loadUsers();
 }
 
 document.addEventListener("DOMContentLoaded", init);
