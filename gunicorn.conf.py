@@ -6,7 +6,7 @@
 workers = 2
 
 # Increase timeout to 120 seconds so the AI pipeline has time to run
-timeout = 120
+timeout = 180
 
 # Log level
 loglevel = "info"

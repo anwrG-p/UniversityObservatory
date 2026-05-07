@@ -102,4 +102,4 @@ COURSE_SCRAPE_URLS = [
 REMOTIVE_API_URL = "https://remotive.com/api/remote-jobs"
 ARXIV_API_URL    = "https://export.arxiv.org/api/query"
 ARXIV_SEARCH_QUERY = "cat:cs.AI OR cat:cs.LG OR cat:stat.ML"
-ARXIV_MAX_RESULTS   = 50
+ARXIV_MAX_RESULTS   = 20

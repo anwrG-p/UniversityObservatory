@@ -236,25 +236,16 @@ class ArXivAPIAgent(_DeduplicateMixin, BaseAgent):
             "sortBy":       "submittedDate",
             "sortOrder":    "descending",
         }
-        import time
-        for attempt in range(3):
-            try:
-                resp = requests.get(config.ARXIV_API_URL, params=params, timeout=20)
-                if resp.status_code == 429:
-                    self.logger.warning("ArXiv rate limit (429). Retrying in %d seconds...", (attempt + 1) * 5)
-                    time.sleep((attempt + 1) * 5)
-                    continue
-                resp.raise_for_status()
-                
-                # Raw debug log for Render
-                self.logger.info("ArXiv Raw Response (first 150 chars): %s", resp.text[:150].replace("\n", " "))
-                
-                return self._parse_atom(resp.text)
-            except requests.exceptions.RequestException as exc:
-                self.logger.warning("ArXiv API error: %s", exc)
-                if attempt == 2: return []
-                time.sleep(2)
-        return []
+        try:
+            resp = requests.get(config.ARXIV_API_URL, params=params, timeout=10)
+            if resp.status_code == 429:
+                self.logger.warning("ArXiv rate limit (429) — skipping this run")
+                return []
+            resp.raise_for_status()
+            return self._parse_atom(resp.text)
+        except requests.exceptions.RequestException as exc:
+            self.logger.warning("ArXiv API error: %s", exc)
+            return []
 
     def _parse_atom(self, xml_text: str) -> List[Dict]:
         """Parse Atom XML response into opportunity dicts."""
@@ -352,10 +343,6 @@ class ScholarshipRSSAgent(_DeduplicateMixin, BaseAgent):
         {
             "url":  "https://opportunitiescorners.com/feed/",
             "type": "scholarship",
-        },
-        {
-            "url":  "https://www.jobs.ac.uk/api/jobs.rss?keywords=fellowship+scholarship&type=fellowship",
-            "type": "fellowship",
         },
     ]
 
