@@ -263,6 +263,22 @@ class DatabaseManager:
             finally:
                 conn.close()
 
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        rows = self.execute("SELECT * FROM users WHERE email = ?", (email,))
+        return rows[0] if rows else None
+
+    def update_user(self, user_id: int, data: Dict) -> None:
+        self.execute(
+            "UPDATE users SET name=?, profile=?, interests=?, skills=? WHERE id=?",
+            (
+                data.get("name", ""),
+                data.get("profile", ""),
+                data.get("interests", ""),
+                data.get("skills", ""),
+                user_id,
+            ),
+        )
+
     # ------------------------------------------------------------------
     # Clusters CRUD
     # ------------------------------------------------------------------
