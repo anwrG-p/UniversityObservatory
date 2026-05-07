@@ -5,6 +5,7 @@ GET /api/recommendations/<user_id>  - ranked recommendations for a user
 """
 
 from flask import Blueprint, jsonify, current_app
+from api.auth import require_auth
 
 recommendations_bp = Blueprint("recommendations", __name__)
 
@@ -14,6 +15,7 @@ def _db():
 
 
 @recommendations_bp.route("/recommendations/<int:user_id>", methods=["GET"])
+@require_auth
 def get_recommendations(user_id: int):
     user = _db().get_user(user_id)
     if not user:

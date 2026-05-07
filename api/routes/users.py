@@ -9,6 +9,7 @@ GET   /api/users/<id>  - get single user
 """
 
 from flask import Blueprint, jsonify, request, current_app
+from api.auth import require_auth
 
 users_bp = Blueprint("users", __name__)
 
@@ -18,12 +19,14 @@ def _db():
 
 
 @users_bp.route("/users", methods=["GET"])
+@require_auth
 def list_users():
     users = _db().get_users()
     return jsonify({"count": len(users), "users": users})
 
 
 @users_bp.route("/users/<int:user_id>", methods=["GET"])
+@require_auth
 def get_user(user_id: int):
     user = _db().get_user(user_id)
     if not user:
@@ -32,6 +35,7 @@ def get_user(user_id: int):
 
 
 @users_bp.route("/users", methods=["POST"])
+@require_auth
 def create_user():
     data = request.get_json(force=True)
     required = ["name", "email"]
