@@ -27,7 +27,7 @@ FLASK_HOST  = os.getenv("FLASK_HOST", "0.0.0.0")
 FLASK_PORT  = int(os.getenv("FLASK_PORT", 5000))
 FLASK_DEBUG = os.getenv("FLASK_DEBUG", "True").lower() == "true"
 SECRET_KEY  = os.getenv("SECRET_KEY", "observatory-secret-key-change-in-prod")
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "")
+SUPABASE_JWT_PUBLIC_KEY = os.getenv("SUPABASE_JWT_PUBLIC_KEY", "")
 SUPABASE_URL      = os.getenv("SUPABASE_URL",      "https://wjtuwtkcqipzdulzcphb.supabase.co")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
