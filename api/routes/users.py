@@ -80,15 +80,15 @@ def upload_resume():
 
     existing = _db().get_user_by_email(email)
     if existing:
-        user_id = existing["id"]
-        _db().update_user(user_id, user_data)
-        # Clear old recommendations so they are regenerated fresh
-        _db().execute("DELETE FROM recommendations WHERE user_id = ?", (user_id,))
-    else:
-        try:
-            user_id = _db().insert_user(user_data)
-        except Exception as exc:
-            return jsonify({"error": str(exc)}), 500
+        return jsonify({
+            "error": "An account with this email already exists. Please log in to update your profile."
+        }), 409
+    try:
+        user_id = _db().insert_user(user_data)
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).error("insert_user failed: %s", exc)
+        return jsonify({"error": "Could not create user account"}), 500
         
     # Generate recommendations instantly for this user
     try:

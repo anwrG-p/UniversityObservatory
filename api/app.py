@@ -59,7 +59,11 @@ def create_app(db: DatabaseManager = None) -> Flask:
 
     @app.route("/")
     def dashboard():
-        return render_template("index.html")
+        return render_template(
+            "index.html",
+            supabase_url=config.SUPABASE_URL,
+            supabase_anon_key=config.SUPABASE_ANON_KEY,
+        )
 
     # Pipeline trigger route
     @app.route("/api/run-pipeline", methods=["POST"])

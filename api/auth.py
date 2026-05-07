@@ -19,7 +19,7 @@ def require_auth(f):
     def decorated(*args, **kwargs):
         if not config.SUPABASE_JWT_SECRET:
             logger.warning("SUPABASE_JWT_SECRET is not set — all authenticated routes will return 401")
-            return jsonify({"error": "Server auth not configured"}), 401
+            return jsonify({"error": "Unauthorized"}), 401
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return jsonify({"error": "Unauthorized"}), 401
