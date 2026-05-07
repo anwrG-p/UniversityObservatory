@@ -18,6 +18,7 @@ from api.routes.opportunities  import opportunities_bp
 from api.routes.users          import users_bp
 from api.routes.recommendations import recommendations_bp
 from api.routes.notifications  import notifications_bp
+from api.auth import require_auth
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,7 @@ def create_app(db: DatabaseManager = None) -> Flask:
 
     # Pipeline trigger route
     @app.route("/api/run-pipeline", methods=["POST"])
+    @require_auth
     def run_pipeline():
         from flask import jsonify, request, current_app
         body = request.get_json(silent=True) or {}
@@ -90,6 +92,7 @@ def create_app(db: DatabaseManager = None) -> Flask:
 
     # Stats route
     @app.route("/api/stats")
+    @require_auth
     def stats():
         from flask import jsonify, current_app
         return jsonify(current_app.config["DB"].get_stats())
