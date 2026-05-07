@@ -69,19 +69,26 @@ def upload_resume():
     except Exception as e:
         return jsonify({"error": f"Failed to parse PDF: {str(e)}"}), 500
         
-    # Create User
+    # Upsert: update existing user or create new one
     user_data = {
         "name": name,
         "email": email,
         "profile": text[:2000],
         "interests": "",
-        "skills": ""
+        "skills": "",
     }
-    
-    try:
-        user_id = _db().insert_user(user_data)
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 409
+
+    existing = _db().get_user_by_email(email)
+    if existing:
+        user_id = existing["id"]
+        _db().update_user(user_id, user_data)
+        # Clear old recommendations so they are regenerated fresh
+        _db().execute("DELETE FROM recommendations WHERE user_id = ?", (user_id,))
+    else:
+        try:
+            user_id = _db().insert_user(user_data)
+        except Exception as exc:
+            return jsonify({"error": str(exc)}), 500
         
     # Generate recommendations instantly for this user
     try:
