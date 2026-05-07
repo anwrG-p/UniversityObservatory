@@ -38,6 +38,10 @@ let activeUserId     = null;
 let chartDistrib     = null;
 let chartClusters    = null;
 
+// ── Auth ─────────────────────────────────────────────────
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let _session = null;
+
 // ── Helpers ───────────────────────────────────────────────
 const $  = id => document.getElementById(id);
 const el = (tag, cls, html) => {
@@ -48,7 +52,11 @@ const el = (tag, cls, html) => {
 };
 
 async function apiFetch(path) {
-  const res = await fetch(API + path);
+  const headers = {};
+  if (_session?.access_token) {
+    headers["Authorization"] = `Bearer ${_session.access_token}`;
+  }
+  const res = await fetch(API + path, { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${path}`);
   return res.json();
 }
@@ -368,7 +376,12 @@ async function runPipeline() {
   status.style.display = "block";
 
   try {
-    const result = await fetch(`${API}/api/run-pipeline`, { method: "POST" });
+    const result = await fetch(`${API}/api/run-pipeline`, {
+      method: "POST",
+      headers: _session?.access_token
+        ? { "Authorization": `Bearer ${_session.access_token}` }
+        : {},
+    });
     const data   = await result.json();
 
     if (data.status === "ok") {
@@ -463,9 +476,50 @@ async function refreshAll() {
   await loadClusters();
 }
 
-// ── Init ──────────────────────────────────────────────────
+// ── Auth bootstrap ─────────────────────────────────────────
+async function authInit() {
+  const overlay   = document.getElementById("auth-overlay");
+  const authBtn   = document.getElementById("auth-btn");
+  const authMsg   = document.getElementById("auth-msg");
+  const authEmail = document.getElementById("auth-email");
+
+  authBtn.addEventListener("click", async () => {
+    const email = authEmail.value.trim();
+    if (!email) { authMsg.textContent = "Please enter your email."; return; }
+    authBtn.disabled = true;
+    authMsg.textContent = "Sending…";
+    const { error } = await _supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    authBtn.disabled = false;
+    authMsg.textContent = error ? `Error: ${error.message}` : "✅ Check your email for the magic link.";
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", async () => {
+    await _supabase.auth.signOut();
+    window.location.reload();
+  });
+
+  _supabase.auth.onAuthStateChange(async (event, session) => {
+    _session = session;
+    if (session) {
+      overlay.style.display = "none";
+      await init();
+    } else {
+      overlay.style.display = "flex";
+    }
+  });
+
+  const { data } = await _supabase.auth.getSession();
+  _session = data.session;
+  if (_session) {
+    overlay.style.display = "none";
+    await init();
+  }
+}
+
 async function init() {
-  // Event listeners
   $("btn-run-pipeline").addEventListener("click", runPipeline);
   $("resume-form").addEventListener("submit", handleResumeUpload);
   $("btn-filter").addEventListener("click", () => {
@@ -479,9 +533,8 @@ async function init() {
   $("btn-prev").addEventListener("click", () => { currentPage--; renderTable(); });
   $("btn-next").addEventListener("click", () => { currentPage++; renderTable(); });
 
-  // Load initial data — parallel where possible
   await Promise.all([loadStats(), loadOpportunities(), loadUsers()]);
   await loadClusters();
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", authInit);
