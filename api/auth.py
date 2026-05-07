@@ -16,11 +16,16 @@ logger = logging.getLogger(__name__)
 
 # Convert JWK JSON → RSA public key object once at import time
 _public_key = None
-if config.SUPABASE_JWT_PUBLIC_KEY:
+_jwk_raw = config.SUPABASE_JWT_PUBLIC_KEY
+if not _jwk_raw:
+    logger.error("SUPABASE_JWT_PUBLIC_KEY is empty or not set in environment")
+else:
+    logger.info("SUPABASE_JWT_PUBLIC_KEY found, length=%d, starts_with=%r", len(_jwk_raw), _jwk_raw[:20])
     try:
-        _public_key = RSAAlgorithm.from_jwk(config.SUPABASE_JWT_PUBLIC_KEY)
+        _public_key = RSAAlgorithm.from_jwk(_jwk_raw)
+        logger.info("RSA public key parsed successfully")
     except Exception as e:
-        logger.error("Failed to parse SUPABASE_JWT_PUBLIC_KEY as JWK: %s", e)
+        logger.error("Failed to parse SUPABASE_JWT_PUBLIC_KEY as JWK: %s | raw value starts: %r", e, _jwk_raw[:50])
 
 
 def require_auth(f):
