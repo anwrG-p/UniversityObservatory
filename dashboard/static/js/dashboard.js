@@ -37,6 +37,7 @@ const PAGE_SIZE      = 15;
 let activeUserId     = null;
 let chartDistrib     = null;
 let chartClusters    = null;
+let _initDone        = false;
 
 // ── Auth ─────────────────────────────────────────────────
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -520,6 +521,8 @@ async function authInit() {
 }
 
 async function init() {
+  if (_initDone) return;
+  _initDone = true;
   $("btn-run-pipeline").addEventListener("click", runPipeline);
   $("resume-form").addEventListener("submit", handleResumeUpload);
   $("btn-filter").addEventListener("click", () => {
